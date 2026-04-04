@@ -249,12 +249,15 @@ const LoginPage = () => {
           </div>
 
           {/* Tagline */}
-          <h2 style={{ fontSize: '52px', fontWeight: 900, color: '#111827', lineHeight: 1.15, margin: '0 0 16px 0' }}>
+          <h2 style={{ fontSize: '52px', fontWeight: 900, color: '#0f172a', lineHeight: 1.15, margin: '0 0 16px 0', letterSpacing: '-1px' }}>
             Think.<br />Train.<br />
-            <span style={{ color: '#38bdf8' }}>Transform.</span>
+            <span style={{
+              background: 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>Transform.</span>
           </h2>
 
-          <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, margin: '0 0 40px 0', maxWidth: '280px' }}>
+          <p style={{ fontSize: '15px', color: '#64748b', lineHeight: 1.7, margin: '0 0 40px 0', maxWidth: '280px' }}>
             We build the mindset for the next generation of learners.
           </p>
 
@@ -267,18 +270,16 @@ const LoginPage = () => {
             gap: '40px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.07)',
           }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: '#111827' }}>10K+</div>
-              <div style={{ fontSize: '11px', color: '#9ca3af', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '4px' }}>Students</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: '#111827' }}>95%</div>
-              <div style={{ fontSize: '11px', color: '#9ca3af', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '4px' }}>Success</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '26px', fontWeight: 900, color: '#111827' }}>50+</div>
-              <div style={{ fontSize: '11px', color: '#9ca3af', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '4px' }}>Courses</div>
-            </div>
+            {[['10K+', 'Students'], ['95%', 'Success'], ['50+', 'Courses']].map(([val, label]) => (
+              <div key={label} style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '26px', fontWeight: 900,
+                  background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                }}>{val}</div>
+                <div style={{ fontSize: '11px', color: '#9ca3af', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '4px' }}>{label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

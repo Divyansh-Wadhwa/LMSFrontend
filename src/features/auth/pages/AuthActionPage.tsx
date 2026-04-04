@@ -84,7 +84,10 @@ const AuthActionPage = () => {
         <div style={{ marginBottom: '36px' }}>
           <h1 style={{ fontSize: '36px', fontWeight: 900, color: '#111827', margin: '0 0 10px 0', lineHeight: 1.2 }}>
             Forgot{' '}
-            <span style={{ color: '#38bdf8' }}>Password?</span>
+            <span style={{
+              background: 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>Password?</span>
           </h1>
           <p style={{ fontSize: '15px', color: '#9ca3af', margin: 0 }}>
             Enter your email to receive an OTP
