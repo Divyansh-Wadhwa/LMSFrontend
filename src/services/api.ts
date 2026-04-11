@@ -1,5 +1,6 @@
 import axios from "axios"
 import { useState, useEffect } from 'react'
+import { useAuthStore } from '../store/useAuthStore'
 
 // Types
 export interface DashboardStats {
@@ -192,14 +193,14 @@ class ApiService {
   private setupInterceptors() {
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         const token = useAuthStore.getState().token
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
         return config
       },
-      (error) => {
+      (error: any) => {
         return Promise.reject(error)
       }
     )
@@ -209,7 +210,7 @@ class ApiService {
       (response: any) => {
         return response
       },
-      async (error) => {
+      async (error: any) => {
         const originalRequest = error.config
 
         // Handle 401 Unauthorized
