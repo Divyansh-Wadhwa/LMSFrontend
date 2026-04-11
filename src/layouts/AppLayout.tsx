@@ -1,5 +1,5 @@
-import SaasSidebar from "../components/shared/SaasSidebar"
-import SaasTopBar from "../components/shared/SaasTopBar"
+import AppSidebar from "../components/shared/AppSidebar"
+import AppTopBar from "../components/shared/AppTopBar"
 import { Outlet } from "react-router-dom"
 
 export default function AppLayout() {
@@ -11,7 +11,7 @@ export default function AppLayout() {
     }}>
       
       {/* Sidebar - Fixed */}
-      <SaasSidebar />
+      <AppSidebar />
 
       {/* Main Content Area */}
       <div style={{
@@ -22,7 +22,7 @@ export default function AppLayout() {
       }}>
         
         {/* Top Bar */}
-        <SaasTopBar />
+        <AppTopBar />
         
         {/* Content */}
         <div style={{

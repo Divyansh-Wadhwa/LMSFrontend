@@ -1,5 +1,5 @@
 import { useState } from "react"
-import SaasSidebar from "../../components/shared/SaasSidebar"
+import AppSidebar from "../../components/shared/AppSidebar"
 
 // SVG Icons
 const SearchIcon = () => (
@@ -367,7 +367,7 @@ export default function MyCourses() {
       backgroundColor: '#F5F7FB',
     }}>
       {/* Shared Sidebar (same as other pages) */}
-      <SaasSidebar />
+      <AppSidebar />
 
       {/* Main Content */}
       <div style={{

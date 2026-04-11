@@ -51,7 +51,7 @@ const menu = [
   { name: "Resources", path: "/resources", Icon: Icons.Resources }
 ]
 
-export default function SaasSidebar() {
+export default function AppSidebar() {
   const location = useLocation()
 
   return (

@@ -19,6 +19,16 @@ import AuthActionPage from "../features/auth/pages/AuthActionPage"
 import LoginPage from "../features/auth/pages/LoginPage"
 import RegisterPage from "../features/auth/pages/RegisterPage"
 
+// Admin imports
+import SuperAdminLayout from "../features/admin/components/SuperAdminLayout"
+import MentorAdminLayout from "../features/admin/components/MentorAdminLayout"
+import ClientAdminLayout from "../features/admin/components/ClientAdminLayout"
+import SuperAdminPage from "../features/admin/pages/SuperAdminPage"
+import MentorAdminPage from "../features/admin/pages/MentorAdminPage"
+import ClientAdminPage from "../features/admin/pages/ClientAdminPage"
+import GlobalContentPage from "../features/admin/pages/GlobalContentPage"
+import BatchManagementPage from "../features/admin/pages/BatchManagementPage"
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -56,6 +66,31 @@ export default function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
 
       </Route>
+
+      {/* Admin Routes - Super Admin has full access */}
+      
+      {/* Super Admin Routes - Full platform access to everything */}
+      <Route element={<SuperAdminLayout />}>
+        <Route path="/admin/super" element={<SuperAdminPage />} />
+        <Route path="/admin/mentor" element={<MentorAdminPage />} />
+        <Route path="/admin/client" element={<ClientAdminPage />} />
+        <Route path="/admin/content" element={<GlobalContentPage />} />
+        <Route path="/admin/batches" element={<BatchManagementPage />} />
+      </Route>
+      
+      {/* Mentor Admin Routes - Content management only */}
+      <Route element={<MentorAdminLayout />}>
+        <Route path="/mentor/mentor" element={<MentorAdminPage />} />
+        <Route path="/mentor/content" element={<GlobalContentPage />} />
+      </Route>
+      
+      {/* Client Admin Routes - Institution management only */}
+      <Route element={<ClientAdminLayout />}>
+        <Route path="/client/client" element={<ClientAdminPage />} />
+        <Route path="/client/content" element={<GlobalContentPage />} />
+        <Route path="/client/batches" element={<BatchManagementPage />} />
+      </Route>
+
     </Routes>
   )
 }

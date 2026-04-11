@@ -13,7 +13,7 @@ const HelpIcon = () => (
   </svg>
 )
 
-export default function SaasTopBar() {
+export default function AppTopBar() {
   const navigate = useNavigate()
   
   return (
