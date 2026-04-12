@@ -28,6 +28,12 @@ import MentorAdminPage from "../features/admin/pages/MentorAdminPage"
 import ClientAdminPage from "../features/admin/pages/ClientAdminPage"
 import GlobalContentPage from "../features/admin/pages/GlobalContentPage"
 import BatchManagementPage from "../features/admin/pages/BatchManagementPage"
+import UsersManagementPage from "../features/admin/pages/UsersManagementPage"
+import SettingsPage from "../features/admin/pages/SettingsPage"
+import TenantsPage from "../features/admin/pages/TenantsPage"
+import BillingPage from "../features/admin/pages/BillingPage"
+import AnalyticsPage from "../features/admin/pages/AnalyticsPage"
+import MentorRequestsPage from "../features/admin/pages/MentorRequestsPage"
 
 export default function AppRoutes() {
   return (
@@ -76,6 +82,12 @@ export default function AppRoutes() {
         <Route path="/admin/client" element={<ClientAdminPage />} />
         <Route path="/admin/content" element={<GlobalContentPage />} />
         <Route path="/admin/batches" element={<BatchManagementPage />} />
+        <Route path="/admin/users" element={<UsersManagementPage />} />
+        <Route path="/admin/system" element={<SettingsPage />} />
+        <Route path="/admin/tenants" element={<TenantsPage />} />
+        <Route path="/admin/billing" element={<BillingPage />} />
+        <Route path="/admin/analytics" element={<AnalyticsPage />} />
+        <Route path="/admin/mentor-requests" element={<MentorRequestsPage />} />
       </Route>
       
       {/* Mentor Admin Routes - Content management only */}
