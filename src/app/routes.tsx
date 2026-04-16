@@ -34,6 +34,7 @@ import TenantsPage from "../features/admin/pages/TenantsPage"
 import BillingPage from "../features/admin/pages/BillingPage"
 import AnalyticsPage from "../features/admin/pages/AnalyticsPage"
 import MentorRequestsPage from "../features/admin/pages/MentorRequestsPage"
+import MentorAnalyticsPage from "../features/admin/pages/MentorAnalyticsPage"
 
 export default function AppRoutes() {
   return (
@@ -94,6 +95,7 @@ export default function AppRoutes() {
       <Route element={<MentorAdminLayout />}>
         <Route path="/mentor/mentor" element={<MentorAdminPage />} />
         <Route path="/mentor/content" element={<GlobalContentPage />} />
+        <Route path="/mentor/analytics" element={<MentorAnalyticsPage />} />
       </Route>
       
       {/* Client Admin Routes - Institution management only */}
