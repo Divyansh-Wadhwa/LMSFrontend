@@ -27,6 +27,7 @@ import SuperAdminPage from "../features/admin/pages/SuperAdminPage"
 import MentorAdminPage from "../features/admin/pages/MentorAdminPage"
 import ClientAdminPage from "../features/admin/pages/ClientAdminPage"
 import StudentPerformancePage from "../features/admin/pages/StudentPerformancePage"
+import ClientReportsPage from "../features/admin/pages/ClientReportsPage"
 import GlobalContentPage from "../features/admin/pages/GlobalContentPage"
 import BatchManagementPage from "../features/admin/pages/BatchManagementPage"
 import UsersManagementPage from "../features/admin/pages/UsersManagementPage"
@@ -105,6 +106,7 @@ export default function AppRoutes() {
         <Route path="/client/content" element={<GlobalContentPage />} />
         <Route path="/client/batches" element={<BatchManagementPage />} />
         <Route path="/client/students" element={<StudentPerformancePage />} />
+        <Route path="/client/reports" element={<ClientReportsPage />} />
       </Route>
 
     </Routes>
