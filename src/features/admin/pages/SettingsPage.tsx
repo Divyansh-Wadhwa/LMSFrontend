@@ -153,85 +153,140 @@ const SecurityTab = () => (
   </div>
 )
 
-const WhiteLabelTab = () => (
-  <div className="space-y-5">
-    <Card title="Tenant Branding">
-      <Field label="Upload Tenant Logo">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center border border-dashed border-gray-300">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
+const WhiteLabelTab = () => {
+  const [primaryColor, setPrimaryColor] = useState('#2563EB')
+  const [secondaryColor, setSecondaryColor] = useState('#38bdf8')
+  const [subdomain, setSubdomain] = useState('techuniversity')
+  const [orgName, setOrgName] = useState('Tech University')
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Card title="Tenant Branding">
+          <Field label="Organisation Name">
+            <Input value={orgName} onChange={e => setOrgName(e.target.value)} />
+          </Field>
+          <Field label="Upload Tenant Logo">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center border border-dashed border-gray-300">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <button className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                Upload Logo
+              </button>
+            </div>
+          </Field>
+          <Field label="Primary Color">
+            <div className="flex items-center gap-3">
+              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)}
+                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
+              <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} />
+            </div>
+          </Field>
+          <Field label="Secondary Color">
+            <div className="flex items-center gap-3">
+              <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)}
+                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
+              <Input value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} />
+            </div>
+          </Field>
+          <Field label="Subdomain">
+            <div className="flex items-center gap-2">
+              <Input value={subdomain} onChange={e => setSubdomain(e.target.value)} />
+              <span className="text-sm text-gray-500 whitespace-nowrap">.triadacademy.in</span>
+            </div>
+          </Field>
+          <SaveBtn />
+        </Card>
+
+        {/* Live Preview */}
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">Live Preview</h3>
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            {/* Preview header */}
+            <div className="px-4 py-3 flex items-center gap-3" style={{ backgroundColor: primaryColor }}>
+              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white text-xs font-bold">
+                {orgName[0] || 'T'}
+              </div>
+              <span className="text-white text-sm font-semibold">{orgName || 'Organisation'}</span>
+            </div>
+            {/* Preview body */}
+            <div className="p-4 bg-gray-50 space-y-3">
+              <div className="h-2 rounded-full w-3/4" style={{ backgroundColor: primaryColor, opacity: 0.2 }} />
+              <div className="h-2 rounded-full w-1/2" style={{ backgroundColor: secondaryColor, opacity: 0.3 }} />
+              <button className="px-4 py-1.5 rounded-lg text-white text-xs font-semibold" style={{ backgroundColor: primaryColor }}>
+                Sign In
+              </button>
+            </div>
+            <div className="px-4 py-2 bg-white border-t border-gray-100 text-xs text-gray-400">
+              {subdomain || 'subdomain'}.triadacademy.in
+            </div>
           </div>
-          <button className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            Upload Logo
-          </button>
+          <p className="text-xs text-gray-400">Preview updates in real-time as you change settings</p>
         </div>
-      </Field>
-      <Field label="Primary Color">
-        <div className="flex items-center gap-3">
-          <input type="color" defaultValue="#2563EB"
-            className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
-          <Input defaultValue="#2563EB" className="flex-1" />
-        </div>
-      </Field>
-      <Field label="Subdomain">
-        <div className="flex items-center">
-          <Input defaultValue="techuniversity" />
-          <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">.triadacademy.in</span>
-        </div>
-      </Field>
-      <SaveBtn />
-    </Card>
-  </div>
-)
+      </div>
+    </div>
+  )
+}
 
 const VIOLATION_LOGS = [
-  { id: 1, student: 'Amit Kumar', exam: 'DSA Final', violation: 'Tab Switch', time: '10:32 AM', count: 3 },
-  { id: 2, student: 'Riya Shah', exam: 'React Assessment', violation: 'Copy-Paste', time: '11:15 AM', count: 1 },
-  { id: 3, student: 'Vikram Nair', exam: 'System Design', violation: 'Tab Switch', time: '2:05 PM', count: 5 },
+  { id: 1, student: 'Amit Kumar', tenant: 'IIT Bombay', exam: 'DSA Final', violation: 'Tab Switch', time: '10:32 AM', count: 3 },
+  { id: 2, student: 'Riya Shah', tenant: 'Tech University', exam: 'React Assessment', violation: 'Copy-Paste', time: '11:15 AM', count: 1 },
+  { id: 3, student: 'Vikram Nair', tenant: 'CodeCamp India', exam: 'System Design', violation: 'Tab Switch', time: '2:05 PM', count: 5 },
+  { id: 4, student: 'Priya Mehta', tenant: 'IIT Bombay', exam: 'Frontend Quiz', violation: 'Camera Off', time: '3:20 PM', count: 1 },
+  { id: 5, student: 'Arjun Das', tenant: 'Global Corp', exam: 'Backend Test', violation: 'Tab Switch', time: '4:45 PM', count: 2 },
 ]
+
+const VIOLATION_STYLE: Record<string, string> = {
+  'Tab Switch': 'bg-orange-50 text-orange-700',
+  'Copy-Paste': 'bg-red-50 text-red-700',
+  'Camera Off': 'bg-purple-50 text-purple-700',
+}
 
 const ProctoringTab = () => (
   <div className="space-y-5">
     <Card title="Proctoring Rules">
       <Field label="Tab Switch Limit (before auto-submit)"><Input type="number" defaultValue="3" /></Field>
+      <Toggle label="Enable Tab Switch Detection" defaultChecked={true} />
       <Toggle label="Copy-Paste Detection" defaultChecked={true} />
       <Toggle label="Camera Required" defaultChecked={false} />
       <Toggle label="Full-Screen Enforcement" defaultChecked={true} />
       <SaveBtn />
     </Card>
     <Card title="Violation Logs">
-      {VIOLATION_LOGS.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-8">No violations recorded</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                {['Student', 'Exam', 'Violation', 'Time', 'Count'].map(h => (
-                  <th key={h} className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {VIOLATION_LOGS.map(log => (
-                <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 px-3 font-medium text-gray-900">{log.student}</td>
-                  <td className="py-3 px-3 text-gray-600">{log.exam}</td>
-                  <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">{log.violation}</span>
-                  </td>
-                  <td className="py-3 px-3 text-gray-500">{log.time}</td>
-                  <td className="py-3 px-3">
-                    <span className={`font-semibold ${log.count >= 3 ? 'text-red-600' : 'text-orange-500'}`}>{log.count}</span>
-                  </td>
-                </tr>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-gray-500">{VIOLATION_LOGS.length} violations recorded today</p>
+        <button className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Export CSV</button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              {['Student', 'Tenant', 'Exam', 'Violation', 'Time', 'Count'].map(h => (
+                <th key={h} className="text-left py-2.5 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </tr>
+          </thead>
+          <tbody>
+            {VIOLATION_LOGS.map(log => (
+              <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                <td className="py-3 px-3 font-medium text-gray-900">{log.student}</td>
+                <td className="py-3 px-3 text-gray-500 text-xs">{log.tenant}</td>
+                <td className="py-3 px-3 text-gray-600 text-xs">{log.exam}</td>
+                <td className="py-3 px-3">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${VIOLATION_STYLE[log.violation] || 'bg-gray-100 text-gray-600'}`}>{log.violation}</span>
+                </td>
+                <td className="py-3 px-3 text-gray-500 text-xs">{log.time}</td>
+                <td className="py-3 px-3">
+                  <span className={`font-bold text-sm ${log.count >= 3 ? 'text-red-600' : 'text-orange-500'}`}>{log.count}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   </div>
 )

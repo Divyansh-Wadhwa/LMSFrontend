@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import PermissionGuard from '../components/PermissionGuard'
 
 type TenantStatus = 'active' | 'suspended'
@@ -90,6 +91,7 @@ const TenantsPage = () => {
   const [showAdd, setShowAdd] = useState(false)
   const [freezeTarget, setFreezeTarget] = useState<Tenant | null>(null)
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
 
   const filtered = tenants.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -104,7 +106,13 @@ const TenantsPage = () => {
   return (
     <PermissionGuard requiredRoles={['super_admin']}>
       <div className="space-y-6">
-        {/* Header */}
+        {/* Suspended warning banner */}
+        {tenants.some(t => t.status === 'suspended') && (
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span><strong>{tenants.filter(t => t.status === 'suspended').length} tenant(s) suspended</strong> — their users cannot access the platform. Unfreeze to restore access.</span>
+          </div>
+        )}
         <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Tenants</h1>
@@ -116,7 +124,7 @@ const TenantsPage = () => {
           </button>
         </div>
 
-        {/* Stats */}
+        {/* Header */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             { label: 'Total Tenants', value: tenants.length, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -154,11 +162,16 @@ const TenantsPage = () => {
                   <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                           {t.name[0]}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{t.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900">{t.name}</p>
+                            {t.status === 'suspended' && (
+                              <span className="px-1.5 py-0.5 text-xs font-bold bg-red-100 text-red-600 rounded">SUSPENDED</span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-400">{t.adminEmail}</p>
                         </div>
                       </div>
@@ -176,8 +189,14 @@ const TenantsPage = () => {
                     <td className="px-5 py-4 text-gray-500">{t.created}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">View</button>
-                        <button className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Edit</button>
+                        <button
+                          onClick={() => navigate(`/admin/client-preview/${t.id}`)}
+                          className="px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                          View Dashboard
+                        </button>
+                        <button disabled={t.status === 'suspended'}
+                          className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">Edit</button>
                         {t.status === 'active'
                           ? <button onClick={() => setFreezeTarget(t)} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">Freeze</button>
                           : <button onClick={() => toggleStatus(t.id)} className="px-3 py-1.5 text-xs font-medium text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">Unfreeze</button>
