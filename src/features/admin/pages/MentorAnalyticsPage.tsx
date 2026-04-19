@@ -68,60 +68,76 @@ const MentorAnalyticsPage = () => {
   return (
     <PermissionGuard requiredRoles={['super_admin', 'mentor_admin']}>
       <div className="space-y-6">
-        {/* Header with Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Header with Gradient & Filters */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 rounded-2xl shadow-xl p-8">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-pink-400 opacity-20 rounded-full blur-2xl"></div>
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Content Analytics</h1>
-              <p className="text-gray-600">Track performance and engagement across all your content</p>
+              <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight">Content Analytics</h1>
+              <p className="text-purple-100 text-lg">Track performance and engagement across all your content</p>
             </div>
             <div className="flex gap-3">
               {/* Time Range Filter */}
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white/30 focus:border-transparent text-sm font-medium cursor-pointer hover:bg-white/20 transition-all"
               >
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="90d">Last 90 days</option>
-                <option value="all">All time</option>
+                <option value="7d" className="text-gray-900">Last 7 days</option>
+                <option value="30d" className="text-gray-900">Last 30 days</option>
+                <option value="90d" className="text-gray-900">Last 90 days</option>
+                <option value="all" className="text-gray-900">All time</option>
               </select>
               {/* Content Type Filter */}
               <select
                 value={contentFilter}
                 onChange={(e) => setContentFilter(e.target.value as ContentType)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white/30 focus:border-transparent text-sm font-medium cursor-pointer hover:bg-white/20 transition-all"
               >
-                <option value="all">All Content</option>
-                <option value="labs">Labs</option>
-                <option value="modules">Learning Modules</option>
-                <option value="practice">Practice Sets</option>
-                <option value="assessments">Assessments</option>
+                <option value="all" className="text-gray-900">All Content</option>
+                <option value="labs" className="text-gray-900">Labs</option>
+                <option value="modules" className="text-gray-900">Learning Modules</option>
+                <option value="practice" className="text-gray-900">Practice Sets</option>
+                <option value="assessments" className="text-gray-900">Assessments</option>
               </select>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                Export Report
+              <button className="px-5 py-2.5 bg-white text-purple-700 rounded-xl hover:bg-gray-50 text-sm font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid with Enhanced Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {analyticsStats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-shrink-0">{getStatIcon(stat.icon)}</div>
-                <span className={`text-sm font-medium ${
-                  stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stat.change}
-                </span>
+          {analyticsStats.map((stat, index) => {
+            const colors = ['from-blue-500 to-cyan-500', 'from-emerald-500 to-teal-500', 'from-violet-500 to-purple-500', 'from-amber-500 to-orange-500']
+            const isPositive = stat.trend === 'up'
+            return (
+              <div key={index} className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 overflow-hidden">
+                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${colors[index]}`}></div>
+                <div className="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-sm">{getStatIcon(stat.icon)}</div>
+                    <span className={`flex items-center gap-1 px-3 py-1 text-sm font-semibold rounded-full ${
+                      isPositive ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
+                    }`}>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isPositive ? "M5 10l7-7m0 0l7 7m-7-7v18" : "M19 14l-7 7m0 0l-7-7m7 7V3"} />
+                      </svg>
+                      {stat.change}
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 tracking-tight">{stat.value}</h3>
+                  <p className="text-gray-500 font-medium mt-1">{stat.title}</p>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-              <p className="text-gray-600 text-sm mt-1">{stat.title}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Main Content Grid */}
@@ -129,21 +145,29 @@ const MentorAnalyticsPage = () => {
           {/* Left Column - Charts & Top Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Views Chart */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Daily Views</h3>
-                <span className="text-sm text-gray-500">Last 7 days</span>
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Daily Views</h3>
+                </div>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Last 7 days</span>
               </div>
-              <div className="flex items-end justify-between h-48 gap-2">
+              <div className="flex items-end justify-between h-48 gap-3">
                 {dailyViews.map((day, index) => (
                   <div key={index} className="flex-1 flex flex-col items-center gap-2">
                     <div className="w-full relative">
                       <div
-                        className="bg-blue-500 rounded-t-lg transition-all hover:bg-blue-600"
+                        className="bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-xl transition-all hover:from-blue-700 hover:to-blue-500 shadow-md hover:shadow-lg cursor-pointer group relative"
                         style={{ height: `${(day.views / maxViews) * 160}px` }}
-                      />
-                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 opacity-0 hover:opacity-100 transition-opacity">
-                        {day.views.toLocaleString()}
+                      >
+                        <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs font-semibold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          {day.views.toLocaleString()} views
+                        </div>
                       </div>
                     </div>
                     <span className="text-xs text-gray-500">{day.day}</span>
@@ -153,11 +177,21 @@ const MentorAnalyticsPage = () => {
             </div>
 
             {/* Top Performing Content */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Top Performing Content</h3>
-                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                  View All →
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Top Performing Content</h3>
+                </div>
+                <button className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors">
+                  View All
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
               <div className="overflow-x-auto">
@@ -179,7 +213,12 @@ const MentorAnalyticsPage = () => {
                           <p className="font-medium text-gray-900">{content.title}</p>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
+                          <span className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
+                            content.type === 'Learning Module' ? 'bg-blue-100 text-blue-700' :
+                            content.type === 'Lab' ? 'bg-emerald-100 text-emerald-700' :
+                            content.type === 'Practice Set' ? 'bg-amber-100 text-amber-700' :
+                            'bg-purple-100 text-purple-700'
+                          }`}>
                             {content.type}
                           </span>
                         </td>
@@ -296,22 +335,29 @@ const MentorAnalyticsPage = () => {
             </div>
 
             {/* Quick Insights */}
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-sm p-6 text-white">
-              <h3 className="text-lg font-semibold mb-4">💡 Insights</h3>
-              <ul className="space-y-3 text-sm">
-                <li className="flex gap-2">
-                  <span className="text-yellow-300">→</span>
-                  <span>Labs have 23% higher completion rate than assessments</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-yellow-300">→</span>
-                  <span>Weekend engagement drops by 35% on average</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-yellow-300">→</span>
-                  <span>Content with videos sees 2x more engagement</span>
-                </li>
-              </ul>
+            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 text-white">
+              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-yellow-300 opacity-20 rounded-full blur-xl"></div>
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <span className="text-xl">💡</span>
+                  </div>
+                  <h3 className="text-xl font-bold">AI Insights</h3>
+                </div>
+                <ul className="space-y-4 text-sm">
+                  {[
+                    'Labs have 23% higher completion rate than assessments',
+                    'Weekend engagement drops by 35% on average',
+                    'Content with videos sees 2x more engagement'
+                  ].map((insight, i) => (
+                    <li key={i} className="flex gap-3 items-start bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <span className="text-yellow-300 font-bold">→</span>
+                      <span className="font-medium">{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>

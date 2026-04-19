@@ -155,106 +155,124 @@ const CreateContentPage = () => {
   return (
     <PermissionGuard requiredRoles={['super_admin', 'mentor_admin', 'client_admin']}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Learning Content</h1>
-          <p className="text-gray-600">Build practice problems, hands-on labs, and assessments for learners</p>
+        {/* Header with Gradient */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-xl p-8">
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-40 h-40 bg-pink-400 opacity-20 rounded-full blur-3xl"></div>
+          <div className="relative">
+            <h1 className="text-4xl font-extrabold text-white mb-2 tracking-tight">Create Learning Content</h1>
+            <p className="text-indigo-100 text-lg">Build practice problems, hands-on labs, and assessments for learners</p>
+          </div>
         </div>
 
-        {/* Content Type Tabs */}
-        <div className="bg-white rounded-xl shadow-sm">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {(['problem', 'lab', 'assessment'] as ContentType[]).map((tab) => (
+        {/* Content Type Tabs with Modern Design */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6">
+            <nav className="flex space-x-2 py-3">
+              {([
+                { id: 'problem', label: 'Problem', icon: '💻', color: 'blue' },
+                { id: 'lab', label: 'Lab', icon: '🧪', color: 'emerald' },
+                { id: 'assessment', label: 'Assessment', icon: '📝', color: 'purple' }
+              ] as const).map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2 ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as ContentType)}
+                  className={`py-3 px-6 rounded-xl font-semibold text-sm capitalize flex items-center gap-2 transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? `bg-gradient-to-r from-${tab.color}-500 to-${tab.color}-600 text-white shadow-lg transform scale-105`
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
-                  <span className="text-xl">{getTabIcon(tab)}</span>
-                  {tab}
+                  <span className="text-lg">{tab.icon}</span>
+                  {tab.label}
                 </button>
               ))}
             </nav>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-8 space-y-8 bg-gradient-to-b from-white to-gray-50/30">
             {/* Common Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`e.g., ${activeTab === 'problem' ? 'Two Sum Challenge' : activeTab === 'lab' ? 'Docker Basics Lab' : 'JavaScript Fundamentals Quiz'}`}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Basic Information</h3>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Title *</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={`e.g., ${activeTab === 'problem' ? 'Two Sum Challenge' : activeTab === 'lab' ? 'Docker Basics Lab' : 'JavaScript Fundamentals Quiz'}`}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Category *</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty *</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">Difficulty *</label>
                 <select
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
                 >
                   <option value="Beginner">🟢 Beginner</option>
                   <option value="Intermediate">🟡 Intermediate</option>
                   <option value="Advanced">🔴 Advanced</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">Duration *</label>
                 <input
                   type="text"
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   placeholder="e.g., 2 hours"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">Tags (comma separated)</label>
                 <input
                   type="text"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="e.g., array, sorting, easy"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">Description *</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={`Describe this ${activeTab}...`}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all resize-none"
                 required
               />
             </div>
@@ -491,17 +509,20 @@ const CreateContentPage = () => {
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <div className="flex justify-end gap-4 pt-8 border-t border-gray-200">
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all flex items-center gap-2"
               >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 Reset
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -513,16 +534,31 @@ const CreateContentPage = () => {
         </div>
 
         {/* Tips Card */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">💡 Tips for Creating Great Content</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li>• Use clear, descriptive titles that indicate what learners will accomplish</li>
-            <li>• Match difficulty level to your target audience's skill level</li>
-            <li>• Include multiple test cases for practice problems (edge cases too!)</li>
-            <li>• Break labs into clear, actionable steps</li>
-            <li>• Use a mix of question types in assessments</li>
-            <li>• Add relevant tags to help learners find your content</li>
-          </ul>
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border border-blue-200">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-200 opacity-30 rounded-full blur-xl"></div>
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-500 rounded-lg shadow-md">
+                <span className="text-white text-xl">💡</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Tips for Creating Great Content</h3>
+            </div>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                'Use clear, descriptive titles that indicate what learners will accomplish',
+                'Match difficulty level to your target audience\'s skill level',
+                'Include multiple test cases for practice problems (edge cases too!)',
+                'Break labs into clear, actionable steps',
+                'Use a mix of question types in assessments',
+                'Add relevant tags to help learners find your content'
+              ].map((tip, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700 bg-white/60 rounded-lg p-3">
+                  <span className="text-blue-500 mt-0.5">✓</span>
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </PermissionGuard>
