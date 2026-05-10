@@ -6,8 +6,9 @@ import { ApiResponse } from '@/types/common.types'
 export const authService = {
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
-      const response = await apiService.post<LoginResponse>('/auth/login', credentials)
-      return createSuccessResponse(response.data, 'Login successful')
+      const response = await apiService.post('/auth/login', credentials)
+      // Backend returns { success, message, data: { accessToken } }
+      return createSuccessResponse(response.data.data, 'Login successful')
     } catch (error: any) {
       return handleApiError(error)
     }
@@ -15,8 +16,9 @@ export const authService = {
 
   async register(userData: RegisterRequest): Promise<ApiResponse<LoginResponse>> {
     try {
-      const response = await apiService.post<LoginResponse>('/auth/register', userData)
-      return createSuccessResponse(response.data, 'Registration successful')
+      const response = await apiService.post('/auth/register', userData)
+      // Backend returns { success, message, data: { userId, message } }
+      return createSuccessResponse(response.data.data, 'Registration successful')
     } catch (error: any) {
       return handleApiError(error)
     }
@@ -45,6 +47,19 @@ export const authService = {
   async getProfile(): Promise<ApiResponse<any>> {
     try {
       const response = await apiService.get('/auth/profile')
+      return createSuccessResponse(response.data, 'Profile retrieved')
+    } catch (error: any) {
+      return handleApiError(error)
+    }
+  },
+
+  async getMeWithToken(token: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiService.get('/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       return createSuccessResponse(response.data, 'Profile retrieved')
     } catch (error: any) {
       return handleApiError(error)
