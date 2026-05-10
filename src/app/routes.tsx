@@ -68,6 +68,7 @@ export default function AppRoutes() {
     <Routes>
 
       {/* ── Auth ── */}
+      <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth-status" element={<AuthStatusPage />} />
@@ -77,7 +78,7 @@ export default function AppRoutes() {
       {/* ── Student-facing app ── */}
       <Route path="/learn" element={<MyCourses />} />
       <Route element={<AppLayout />}>
-        <Route path="/" element={<SaasDashboard />} />
+        <Route path="/dashboard" element={<SaasDashboard />} />
         <Route path="/labs" element={<LabsHub />} />
         <Route path="/lab/:labId" element={<LabDetail />} />
         <Route path="/lab/:labId/exercise/:exerciseId" element={<LabExercise />} />
