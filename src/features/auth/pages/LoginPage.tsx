@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLoginMutation } from '../hooks/useAuthMutation'
 
 const LoginPage = () => {
@@ -8,7 +8,12 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
-  const loginMutation = useLoginMutation()
+  const navigate = useNavigate()
+  const loginMutation = useLoginMutation({
+    onSuccess: () => {
+      navigate('/dashboard', { replace: true })
+    }
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
