@@ -6,7 +6,7 @@ import { ApiResponse } from '@/types/common.types'
 export const authService = {
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
-      const response = await apiService.post('/auth/login', credentials)
+      const response = await apiService.post('/auth/signin', credentials)
       // Backend returns { success, message, data: { accessToken } }
       return createSuccessResponse(response.data.data, 'Login successful')
     } catch (error: any) {
