@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useRegisterMutation } from '../hooks/useAuthMutation'
 
 const EyeIcon = ({ open }: { open: boolean }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -19,12 +20,30 @@ const EyeIcon = ({ open }: { open: boolean }) => (
 )
 
 const RegisterPage = () => {
+  const navigate = useNavigate()
+  const registerMutation = useRegisterMutation({
+    onSuccess: () => {
+      console.log('Registration successful, redirecting to verify-email...')
+      console.log('Email being passed:', formData.email)
+      console.log('Navigate call executing...')
+      try {
+        // Force page reload with new URL - more reliable than href
+        window.location.assign('/verify-email')
+        console.log('Forced redirect executed')
+      } catch (error) {
+        console.error('Redirect failed:', error)
+      }
+    },
+    onError: (error) => {
+      console.error('Registration failed:', error)
+    }
+  })
+  
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -42,8 +61,19 @@ const RegisterPage = () => {
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password'
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match'
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return }
-    setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+    
+    // Capture email at submission time to ensure it's available in onSuccess callback
+    const emailToVerify = formData.email
+    
+    // Save email to localStorage for verification page
+    localStorage.setItem('pendingVerificationEmail', emailToVerify)
+    
+    registerMutation.mutate({
+      name: formData.name,
+      email: emailToVerify,
+      password: formData.password,
+      role: 'student'
+    })
   }
 
   const inputBase: React.CSSProperties = {
@@ -341,19 +371,19 @@ const RegisterPage = () => {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={registerMutation.isPending}
                 className="reg-btn"
                 style={{
                   width: '100%', padding: '15px',
                   borderRadius: '12px',
-                  background: loading ? '#cbd5e1' : 'linear-gradient(90deg, #38bdf8 0%, #2563EB 100%)',
+                  background: registerMutation.isPending ? '#cbd5e1' : 'linear-gradient(90deg, #38bdf8 0%, #2563EB 100%)',
                   color: 'white', fontWeight: 700, fontSize: '15px',
-                  border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  border: 'none', cursor: registerMutation.isPending ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                   marginTop: '4px',
                 }}
               >
-                {loading ? (
+                {registerMutation.isPending ? (
                   <>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                       style={{ animation: 'spin 0.8s linear infinite' }}>

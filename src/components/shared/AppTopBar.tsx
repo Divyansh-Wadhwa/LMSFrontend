@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "../../store/useAuthStore"
+import { useLogoutMutation } from "../../features/auth/hooks/useAuthMutation"
 
 // Minimal SVG Icons
 const BellIcon = () => (
@@ -13,8 +15,31 @@ const HelpIcon = () => (
   </svg>
 )
 
+const LogoutIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+  </svg>
+)
+
 export default function AppTopBar() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const logoutMutation = useLogoutMutation()
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        navigate('/login')
+      }
+    })
+  }
+  
+  // Get user initials
+  const userInitials = user?.name
+    ?.split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase() || 'U'
   
   return (
     <div style={{
@@ -117,24 +142,51 @@ export default function AppTopBar() {
         }}>
           <HelpIcon />
         </button>
-        
-        {/* User Avatar */}
-        <div 
-          onClick={() => navigate('/profile')}
+
+        {/* Logout */}
+        <button 
+          onClick={handleLogout}
+          title="Logout"
           style={{
             width: '32px',
             height: '32px',
-            backgroundColor: '#2563EB',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '16px',
+            transition: 'background-color 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F1F5F9'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+          }}
+        >
+          <LogoutIcon />
+        </button>
+        
+          {/* User Avatar */}
+          <div 
+            onClick={() => navigate('/profile')}
+            style={{
+              width: '32px',
+              height: '32px',
+            backgroundColor: '#2563EB',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             color: 'white',
             fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer'
+            fontWeight: '600'
           }}>
-          DW
+          {userInitials}
         </div>
       </div>
     </div>

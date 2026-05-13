@@ -15,12 +15,14 @@ import Assessment from "../features/assessments/AssessmentPage"
 import Leaderboard from "../features/leaderboard/LeaderboardPage"
 import Discussion from "../features/discussion/DiscussionPage"
 import ProfilePage from "../features/profile/ProfilePage"
+import AwardWinningDashboard from "../features/dashboard/AwardWinningDashboard"
 
 // Auth pages
 import AuthStatusPage from "../features/auth/pages/AuthStatusPage"
 import AuthActionPage from "../features/auth/pages/AuthActionPage"
 import LoginPage from "../features/auth/pages/LoginPage"
 import RegisterPage from "../features/auth/pages/RegisterPage"
+import VerifyEmailPage from "../features/auth/pages/VerifyEmailPage"
 
 // ── Super Admin Panel ──────────────────────────────────────
 import SuperAdminLayout from "../features/admin/components/SuperAdminLayout"
@@ -63,6 +65,8 @@ import AssignContentPage from "../features/admin/pages/client/AssignContentPage"
 import ClientAnalyticsPage from "../features/admin/pages/client/ClientAnalyticsPage"
 import AssessmentResultsPage from "../features/admin/pages/client/AssessmentResultsPage"
 import ProctoringLogsPage from "../features/admin/pages/client/ProctoringLogsPage"
+import ProfessionalDashboard from "@/features/dashboard/ProfessionalDashboard"
+import ExactDashboard from "@/features/dashboard/ExactDashboard"
 export default function AppRoutes() {
   return (
     <Routes>
@@ -71,6 +75,7 @@ export default function AppRoutes() {
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/auth-status" element={<AuthStatusPage />} />
       <Route path="/auth-action" element={<AuthActionPage />} />
       <Route path="/forgot-password" element={<AuthActionPage />} />

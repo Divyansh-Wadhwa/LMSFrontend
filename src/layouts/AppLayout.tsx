@@ -1,8 +1,15 @@
 import AppSidebar from "../components/shared/AppSidebar"
 import AppTopBar from "../components/shared/AppTopBar"
-import { Outlet } from "react-router-dom"
+import { Outlet, Navigate } from "react-router-dom"
+import { useAuthStore } from "../store/useAuthStore"
 
 export default function AppLayout() {
+  const { user } = useAuthStore()
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
   return (
     <div style={{
       minHeight: '100vh',

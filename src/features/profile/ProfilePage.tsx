@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { useAuthStore } from "../../store/useAuthStore"
+import { authService } from "../auth/services/auth.service"
 
 // SVG Icons
 const PencilIcon = () => (
@@ -77,6 +79,31 @@ export default function ProfilePage() {
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [profileVisible, setProfileVisible] = useState(true)
+  const { user, updateUser } = useAuthStore()
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    location: user?.location || ''
+  })
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true)
+    const res = await authService.updateProfile(editForm)
+    if (res.success) {
+      updateUser(res.data)
+      setIsEditing(false)
+    }
+    setIsSaving(false)
+  }
+
+  const userInitials = user?.name
+    ?.split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase() || 'U'
 
   return (
     <div>
@@ -117,7 +144,7 @@ export default function ProfilePage() {
               fontWeight: '600',
               color: 'white'
             }}>
-              AS
+              {userInitials}
             </div>
           </div>
           <span style={{
@@ -142,14 +169,32 @@ export default function ProfilePage() {
             gap: '12px',
             marginBottom: '6px'
           }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: '600',
-              color: '#0F172A',
-              margin: 0
-            }}>
-              Divyansh Wadhwa
-            </h1>
+            {isEditing ? (
+              <input
+                value={editForm.name}
+                onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                style={{
+                  fontSize: '28px',
+                  fontWeight: '600',
+                  color: '#0F172A',
+                  margin: 0,
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  width: '100%',
+                  maxWidth: '300px'
+                }}
+              />
+            ) : (
+              <h1 style={{
+                fontSize: '28px',
+                fontWeight: '600',
+                color: '#0F172A',
+                margin: 0
+              }}>
+                {user?.name || 'Student Name'}
+              </h1>
+            )}
             <span style={{
               fontSize: '11px',
               fontWeight: '700',
@@ -160,7 +205,7 @@ export default function ProfilePage() {
               borderRadius: '999px',
               textTransform: 'uppercase'
             }}>
-              PRO STUDENT
+              {user?.role ? `${user.role} account` : 'PRO STUDENT'}
             </span>
           </div>
           <p style={{
@@ -168,7 +213,7 @@ export default function ProfilePage() {
             color: '#64748B',
             margin: '0 0 16px 0'
           }}>
-            Full-Stack Development Trainee • Engineering Batch of 2024
+            Member since {user?.createdAt ? new Date(user.createdAt).getFullYear() : '2024'}
           </p>
           <div style={{
             display: 'flex',
@@ -176,7 +221,7 @@ export default function ProfilePage() {
           }}>
             <button style={{
               padding: '10px 16px',
-              backgroundColor: '#0F3D5E',
+              backgroundColor: isEditing ? '#DC2626' : '#0F3D5E',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -188,14 +233,22 @@ export default function ProfilePage() {
               gap: '8px',
               transition: 'all 0.2s ease'
             }}
+            onClick={() => {
+              if (isEditing) {
+                setEditForm({ name: user?.name || '', phone: user?.phone || '', location: user?.location || '' })
+                setIsEditing(false)
+              } else {
+                setIsEditing(true)
+              }
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#1E3A5F'
+              e.currentTarget.style.backgroundColor = isEditing ? '#B91C1C' : '#1E3A5F'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#0F3D5E'
+              e.currentTarget.style.backgroundColor = isEditing ? '#DC2626' : '#0F3D5E'
             }}>
-              <PencilIcon />
-              EDIT PROFILE
+              {!isEditing && <PencilIcon />}
+              {isEditing ? 'CANCEL EDIT' : 'EDIT PROFILE'}
             </button>
             <button style={{
               padding: '10px 16px',
@@ -390,7 +443,7 @@ export default function ProfilePage() {
               fontSize: '14px',
               color: 'white'
             }}>
-              aaryan.s@triad.edu.in
+              {user?.email || 'No email provided'}
             </div>
           </div>
 
@@ -404,12 +457,27 @@ export default function ProfilePage() {
             }}>
               Phone
             </div>
-            <div style={{
-              fontSize: '14px',
-              color: 'white'
-            }}>
-              +91 98765 43210
-            </div>
+            {isEditing ? (
+              <input
+                value={editForm.phone}
+                onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                placeholder="Enter phone number"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '14px'
+                }}
+              />
+            ) : (
+              <div style={{
+                fontSize: '14px',
+                color: 'white'
+              }}>
+                {user?.phone || 'Not provided'}
+              </div>
+            )}
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -422,33 +490,52 @@ export default function ProfilePage() {
             }}>
               Location
             </div>
-            <div style={{
-              fontSize: '14px',
-              color: 'white'
-            }}>
-              Bengaluru, KA (Main)
-            </div>
+            {isEditing ? (
+              <input
+                value={editForm.location}
+                onChange={e => setEditForm({ ...editForm, location: e.target.value })}
+                placeholder="Enter location"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '14px'
+                }}
+              />
+            ) : (
+              <div style={{
+                fontSize: '14px',
+                color: 'white'
+              }}>
+                {user?.location || 'Not provided'}
+              </div>
+            )}
           </div>
 
           <button style={{
             width: '100%',
             padding: '10px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
+            backgroundColor: isEditing ? '#16A34A' : 'rgba(255,255,255,0.1)',
             color: 'white',
-            border: '1px solid rgba(255,255,255,0.2)',
+            border: isEditing ? 'none' : '1px solid rgba(255,255,255,0.2)',
             borderRadius: '10px',
             fontSize: '13px',
             fontWeight: '500',
-            cursor: 'pointer',
+            cursor: isSaving ? 'wait' : 'pointer',
             transition: 'all 0.2s ease'
           }}
+          onClick={isEditing ? handleSaveProfile : undefined}
+          disabled={isSaving}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+            if (!isEditing) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
+            else e.currentTarget.style.backgroundColor = '#15803D'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'
+            if (!isEditing) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'
+            else e.currentTarget.style.backgroundColor = '#16A34A'
           }}>
-            VERIFY DETAILS
+            {isSaving ? 'SAVING...' : (isEditing ? 'SAVE DETAILS' : 'VERIFY DETAILS')}
           </button>
         </div>
       </div>

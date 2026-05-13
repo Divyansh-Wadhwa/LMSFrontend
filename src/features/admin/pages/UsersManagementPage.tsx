@@ -1,32 +1,29 @@
 import { useState } from 'react'
 import PermissionGuard from '../components/PermissionGuard'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { adminService } from '../services/admin.service'
 
-type Role = 'super_admin' | 'client_admin' | 'mentor'
+type Role = 'SUPER_ADMIN' | 'CLIENT' | 'MENTOR' | 'LEARNER' | 'student'
 type Status = 'active' | 'disabled'
 
 interface User {
-  id: number
+  id: string
   name: string
   email: string
-  role: Role
-  client: string
-  status: Status
+  globalRole: string | null
+  membership: { role: string; org: { id: string; name: string } } | null
+  isActive: boolean
   lastLogin: string
 }
 
-const MOCK_USERS: User[] = [
-  { id: 1, name: 'Arjun Sharma', email: 'arjun@triad.in', role: 'super_admin', client: 'Platform', status: 'active', lastLogin: '2 mins ago' },
-  { id: 2, name: 'Priya Nair', email: 'priya@techuni.edu', role: 'client_admin', client: 'Tech University', status: 'active', lastLogin: '1 hour ago' },
-  { id: 3, name: 'Rahul Verma', email: 'rahul@triad.in', role: 'mentor', client: 'Platform', status: 'active', lastLogin: '3 hours ago' },
-  { id: 4, name: 'Sneha Patel', email: 'sneha@globalcorp.com', role: 'client_admin', client: 'Global Corp', status: 'disabled', lastLogin: '5 days ago' },
-  { id: 5, name: 'Kiran Reddy', email: 'kiran@triad.in', role: 'mentor', client: 'Platform', status: 'active', lastLogin: 'Yesterday' },
-  { id: 6, name: 'Meera Joshi', email: 'meera@iitb.ac.in', role: 'client_admin', client: 'IIT Bombay', status: 'active', lastLogin: '30 mins ago' },
-]
 
-const ROLE_BADGE: Record<Role, { label: string; className: string }> = {
-  super_admin: { label: 'Super Admin', className: 'bg-purple-100 text-purple-700' },
-  client_admin: { label: 'Client Admin', className: 'bg-blue-100 text-blue-700' },
-  mentor:       { label: 'Mentor',       className: 'bg-green-100 text-green-700' },
+
+const ROLE_BADGE: Record<string, { label: string; className: string }> = {
+  SUPER_ADMIN: { label: 'Super Admin', className: 'bg-purple-100 text-purple-700' },
+  CLIENT:      { label: 'Client Admin', className: 'bg-blue-100 text-blue-700' },
+  MENTOR:      { label: 'Mentor',       className: 'bg-green-100 text-green-700' },
+  LEARNER:     { label: 'Student',      className: 'bg-gray-100 text-gray-700' },
+  student:     { label: 'Student',      className: 'bg-gray-100 text-gray-700' },
 }
 
 const STATUS_BADGE: Record<Status, string> = {
@@ -34,57 +31,178 @@ const STATUS_BADGE: Record<Status, string> = {
   disabled: 'bg-red-100 text-red-700',
 }
 
-const CLIENTS = ['All Clients', 'Platform', 'Tech University', 'Global Corp', 'IIT Bombay']
 
-interface ModalProps { onClose: () => void }
-const AddUserModal = ({ onClose }: ModalProps) => {
-  const [role, setRole] = useState<Role>('mentor')
+
+interface ModalProps { onClose: () => void; orgs: any[] }
+const AddUserModal = ({ onClose, orgs }: ModalProps) => {
+  const [role, setRole] = useState<'SUPER_ADMIN'|'CLIENT'|'MENTOR'|'LEARNER'>('LEARNER')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [orgId, setOrgId] = useState('')
+  
+  const queryClient = useQueryClient()
+  const createMutation = useMutation({
+    mutationFn: (data: any) => adminService.createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      onClose()
+    }
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload: any = { name, email, password }
+    if (role === 'SUPER_ADMIN' || role === 'CLIENT') {
+      payload.globalRole = role
+    } else {
+      payload.orgRole = role
+      payload.orgId = orgId
+    }
+    createMutation.mutate(payload)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 animate-fade-up">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 animate-fade-up">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900">Add New User</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
+          <button type="button" onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
+        
+        {createMutation.isError && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            Failed to create user. Ensure email is unique.
+          </div>
+        )}
+
         <div className="space-y-4">
-          {[['Full Name', 'text', 'John Doe'], ['Email Address', 'email', 'john@example.com'], ['Password', 'password', '••••••••']].map(([label, type, placeholder]) => (
-            <div key={label as string}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-              <input type={type as string} placeholder={placeholder as string}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="John Doe"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="john@example.com"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+          </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select value={role} onChange={e => setRole(e.target.value as Role)}
+            <select value={role} onChange={e => setRole(e.target.value as any)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-              <option value="super_admin">Super Admin</option>
-              <option value="client_admin">Client Admin</option>
-              <option value="mentor">Mentor</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="CLIENT">Client Admin</option>
+              <option value="MENTOR">Mentor</option>
+              <option value="LEARNER">Student</option>
             </select>
           </div>
-          {role !== 'super_admin' && (
+          {(role === 'MENTOR' || role === 'LEARNER') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Client</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                {CLIENTS.slice(1).map(c => <option key={c}>{c}</option>)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Organization</label>
+              <select required value={orgId} onChange={e => setOrgId(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                <option value="">Select an organization...</option>
+                {orgs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
               </select>
             </div>
           )}
         </div>
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             Cancel
           </button>
-          <button className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
-            Add User
+          <button type="submit" disabled={createMutation.isPending} className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50">
+            {createMutation.isPending ? 'Creating...' : 'Add User'}
           </button>
         </div>
-      </div>
+      </form>
+    </div>
+  )
+}
+
+const ManageUserModal = ({ user, onClose, orgs }: { user: User; onClose: () => void; orgs: any[] }) => {
+  const currentRole = user.globalRole || user.membership?.role || 'LEARNER'
+  const currentOrgId = user.membership?.org.id || ''
+
+  const [role, setRole] = useState<'SUPER_ADMIN'|'CLIENT'|'MENTOR'|'LEARNER'>(currentRole as any)
+  const [orgId, setOrgId] = useState(currentOrgId)
+  
+  const queryClient = useQueryClient()
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => adminService.updateUserRole(user.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      onClose()
+    }
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload: any = { roleType: role }
+    if (role === 'MENTOR' || role === 'LEARNER') {
+      payload.orgId = orgId
+    }
+    updateMutation.mutate(payload)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 animate-fade-up">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-gray-900">Manage Role for {user.name}</h3>
+          <button type="button" onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {updateMutation.isError && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            Failed to update user role.
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select value={role} onChange={e => setRole(e.target.value as any)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="CLIENT">Client Admin</option>
+              <option value="MENTOR">Mentor</option>
+              <option value="LEARNER">Student</option>
+            </select>
+          </div>
+          {(role === 'MENTOR' || role === 'LEARNER') && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Organization</label>
+              <select required value={orgId} onChange={e => setOrgId(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                <option value="">Select an organization...</option>
+                {orgs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={updateMutation.isPending} className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50">
+            {updateMutation.isPending ? 'Saving...' : 'Save Role'}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
@@ -95,23 +213,37 @@ const UsersManagementPage = () => {
   const [clientFilter, setClientFilter] = useState('All Clients')
   const [statusFilter, setStatusFilter] = useState('all')
   const [showModal, setShowModal] = useState(false)
+  const [managingUser, setManagingUser] = useState<User | null>(null)
 
-  const filtered = MOCK_USERS.filter(u => {
+  const { data: usersData, isLoading: loadingUsers } = useQuery({ queryKey: ['users'], queryFn: adminService.getUsers })
+  const { data: orgsData } = useQuery({ queryKey: ['organizations'], queryFn: adminService.getOrganizations })
+
+  const users: User[] = usersData?.data || []
+  const orgs: any[] = orgsData?.data || []
+
+  const CLIENTS = ['All Clients', ...orgs.map(o => o.name)]
+
+  const filtered = users.filter(u => {
+    const role = u.globalRole || u.membership?.role || 'student'
+    const status = u.isActive ? 'active' : 'disabled'
+    const client = u.membership?.org.name || 'Platform'
+
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
-    const matchRole = roleFilter === 'all' || u.role === roleFilter
-    const matchClient = clientFilter === 'All Clients' || u.client === clientFilter
-    const matchStatus = statusFilter === 'all' || u.status === statusFilter
+    const matchRole = roleFilter === 'all' || role === roleFilter
+    const matchClient = clientFilter === 'All Clients' || client === clientFilter
+    const matchStatus = statusFilter === 'all' || status === statusFilter
+    
     return matchSearch && matchRole && matchClient && matchStatus
   })
 
   const stats = [
-    { label: 'Total Users', value: MOCK_USERS.length, color: 'text-blue-600', bg: 'bg-blue-50',
+    { label: 'Total Users', value: users.length, color: 'text-blue-600', bg: 'bg-blue-50',
       icon: <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
-    { label: 'Active Users', value: MOCK_USERS.filter(u => u.status === 'active').length, color: 'text-green-600', bg: 'bg-green-50',
+    { label: 'Active Users', value: users.filter(u => u.isActive).length, color: 'text-green-600', bg: 'bg-green-50',
       icon: <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-    { label: 'Admins', value: MOCK_USERS.filter(u => u.role === 'super_admin' || u.role === 'client_admin').length, color: 'text-purple-600', bg: 'bg-purple-50',
+    { label: 'Admins', value: users.filter(u => u.globalRole === 'SUPER_ADMIN' || u.globalRole === 'CLIENT').length, color: 'text-purple-600', bg: 'bg-purple-50',
       icon: <svg className="w-7 h-7 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
-    { label: 'Mentors', value: MOCK_USERS.filter(u => u.role === 'mentor').length, color: 'text-orange-600', bg: 'bg-orange-50',
+    { label: 'Mentors', value: users.filter(u => u.membership?.role === 'MENTOR').length, color: 'text-orange-600', bg: 'bg-orange-50',
       icon: <svg className="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> },
   ]
 
@@ -159,7 +291,7 @@ const UsersManagementPage = () => {
                 className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
             </div>
             {[
-              { value: roleFilter, onChange: setRoleFilter, options: [['all','All Roles'],['super_admin','Super Admin'],['client_admin','Client Admin'],['mentor','Mentor']] },
+              { value: roleFilter, onChange: setRoleFilter, options: [['all','All Roles'],['SUPER_ADMIN','Super Admin'],['CLIENT','Client Admin'],['MENTOR','Mentor']] },
               { value: statusFilter, onChange: setStatusFilter, options: [['all','All Status'],['active','Active'],['disabled','Disabled']] },
             ].map((f, i) => (
               <select key={i} value={f.value} onChange={e => f.onChange(e.target.value)}
@@ -184,61 +316,69 @@ const UsersManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {loadingUsers ? (
+                  <tr><td colSpan={7} className="text-center py-16 text-gray-400">Loading...</td></tr>
+                ) : filtered.length === 0 ? (
                   <tr><td colSpan={7} className="text-center py-16 text-gray-400">
                     <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     No users found
                   </td></tr>
-                ) : filtered.map(user => (
-                  <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-                          {user.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                ) : filtered.map(user => {
+                  const role = user.globalRole || user.membership?.role || 'student'
+                  const status = user.isActive ? 'active' : 'disabled'
+                  const clientName = user.membership?.org.name || 'Platform'
+                  return (
+                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                            {user.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-gray-900">{user.name}</span>
                         </div>
-                        <span className="font-medium text-gray-900">{user.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600">{user.email}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${ROLE_BADGE[user.role].className}`}>
-                        {ROLE_BADGE[user.role].label}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600">{user.client}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE[user.status]}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-gray-500">{user.lastLogin}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <button className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Edit</button>
-                        <button className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                          user.status === 'active'
-                            ? 'text-red-600 border border-red-200 hover:bg-red-50'
-                            : 'text-green-600 border border-green-200 hover:bg-green-50'
-                        }`}>
-                          {user.status === 'active' ? 'Disable' : 'Enable'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-5 py-4 text-gray-600">{user.email}</td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${ROLE_BADGE[role]?.className || ''}`}>
+                          {ROLE_BADGE[role]?.label || role}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600">{clientName}</td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE[status]}`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-gray-500">Just now</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => setManagingUser(user)} className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Manage</button>
+                          <button className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            user.isActive
+                              ? 'text-red-600 border border-red-200 hover:bg-red-50'
+                              : 'text-green-600 border border-green-200 hover:bg-green-50'
+                          }`}>
+                            {user.isActive ? 'Disable' : 'Enable'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Footer */}
           <div className="px-5 py-3 border-t border-gray-100 text-sm text-gray-500">
-            Showing {filtered.length} of {MOCK_USERS.length} users
+            Showing {filtered.length} of {users.length} users
           </div>
         </div>
 
-        {showModal && <AddUserModal onClose={() => setShowModal(false)} />}
+        {showModal && <AddUserModal orgs={orgs} onClose={() => setShowModal(false)} />}
+        {managingUser && <ManageUserModal user={managingUser} orgs={orgs} onClose={() => setManagingUser(null)} />}
       </div>
     </PermissionGuard>
   )

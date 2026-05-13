@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom'
+import { useAuthStore } from '../../../store/useAuthStore'
 
 type MenuItem = { title: string; icon: string; path: string; description: string }
 type MenuGroup = { label: string; items: MenuItem[] }
@@ -63,6 +64,11 @@ const ICONS: Record<string, JSX.Element> = {
 const ClientAdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
+  const { user } = useAuthStore()
+
+  if (!user || user.globalRole !== 'CLIENT') {
+    return <Navigate to="/login" replace />
+  }
 
   const allItems = MENU_GROUPS.flatMap(g => g.items)
   const activeTitle = allItems.find(i => location.pathname === i.path)?.title || 'Client Admin'

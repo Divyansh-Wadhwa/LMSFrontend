@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { mockApi, useApi, formatRelativeTime } from '../../services/api'
+import { useAuthStore } from '../../store/useAuthStore'
 
 // SVG Icons
 const RefreshIcon = () => (
@@ -43,6 +44,10 @@ const activityColors: Record<string, { bg: string; color: string }> = {
 }
 
 export default function SaasDashboard() {
+  // Get user data
+  const { user } = useAuthStore()
+  console.log('SaasDashboard user data:', user) // Debug: Log user data
+  
   // Fetch dashboard data
   const { data: stats, loading: statsLoading, refetch: refetchStats } = useApi(mockApi.getDashboardStats, [])
   const { data: activities, loading: activitiesLoading } = useApi(() => mockApi.getActivities(5), [])
@@ -97,7 +102,7 @@ export default function SaasDashboard() {
             color: '#0F172A',
             margin: '0 0 4px 0'
           }}>
-            Good morning, Divyansh
+            Good morning, {user?.name || 'Student'}
           </h1>
           <p style={{
             fontSize: '14px',

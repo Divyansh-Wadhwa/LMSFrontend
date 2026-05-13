@@ -1,10 +1,18 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    PROFILE: '/auth/profile',
+    LOGIN: '/api/v1/auth/signin',
+    REGISTER: '/api/v1/auth/signup',
+    VERIFY_EMAIL: '/api/v1/auth/verify-email',
+    RESEND_OTP: '/api/v1/auth/resend-otp',
+    REFRESH: '/api/v1/auth/refresh',
+    LOGOUT: '/api/v1/auth/signout',
+    PROFILE: '/api/v1/auth/me',
+  },
+  USERS: {
+    LIST: '/api/v1/users',
+    CREATE: '/api/v1/users',
+    ORGANIZATIONS: '/api/v1/users/organizations',
+    UPDATE_ROLE: '/api/v1/users/:id/role',
   },
   PROBLEMS: {
     LIST: '/problems',

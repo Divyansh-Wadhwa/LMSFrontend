@@ -10,8 +10,16 @@ const LoginPage = () => {
 
   const navigate = useNavigate()
   const loginMutation = useLoginMutation({
-    onSuccess: () => {
-      navigate('/dashboard', { replace: true })
+    onSuccess: (user) => {
+      if (user?.globalRole === 'SUPER_ADMIN') {
+        navigate('/admin/super', { replace: true })
+      } else if (user?.globalRole === 'CLIENT') {
+        navigate('/admin/client', { replace: true })
+      } else if (user?.orgRole === 'MENTOR') {
+        navigate('/admin/mentor', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     }
   })
 

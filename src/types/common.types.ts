@@ -2,7 +2,11 @@ export interface User {
   id: string
   email: string
   name: string
-  role: 'student' | 'instructor' | 'admin'
+  phone?: string | null
+  location?: string | null
+  role: string
+  globalRole?: 'SUPER_ADMIN' | 'CLIENT' | null
+  orgRole?: 'MENTOR' | 'LEARNER' | null
   avatar?: string
   createdAt: string
   updatedAt: string

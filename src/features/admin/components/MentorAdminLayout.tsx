@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom'
+import { useAuthStore } from '../../../store/useAuthStore'
 
 const MentorAdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
+  const { user } = useAuthStore()
+
+  if (!user || user.orgRole !== 'MENTOR') {
+    return <Navigate to="/login" replace />
+  }
 
   const menuItems = [
     { title: 'Dashboard',    icon: 'dashboard',    path: '/admin/mentor',           description: 'Content creation overview' },

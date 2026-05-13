@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
+import { useAuthStore } from "../../store/useAuthStore"
 
 // Minimal SVG Icons
 const Icons = {
@@ -42,7 +43,7 @@ const Icons = {
 }
 
 const menu = [
-  { name: "Dashboard", path: "/", Icon: Icons.Dashboard },
+  { name: "Dashboard", path: "/dashboard", Icon: Icons.Dashboard },
   { name: "Labs", path: "/labs", Icon: Icons.Labs },
   { name: "Practice", path: "/practice", Icon: Icons.Practice },
   { name: "Assessments", path: "/assessments", Icon: Icons.Assessments },
@@ -53,6 +54,7 @@ const menu = [
 
 export default function AppSidebar() {
   const location = useLocation()
+  const { user } = useAuthStore()
 
   return (
     <div style={{
@@ -213,7 +215,11 @@ export default function AppSidebar() {
             fontWeight: '600',
             flexShrink: 0
           }}>
-            DW
+            {user?.name
+              ?.split(' ')
+              .map(word => word[0])
+              .join('')
+              .toUpperCase() || 'U'}
           </div>
           <div>
             <div style={{
@@ -222,7 +228,7 @@ export default function AppSidebar() {
               color: '#0F172A',
               lineHeight: '1.2'
             }}>
-              Divyansh Wadhwa
+              {user?.name || 'Student'}
             </div>
             <div style={{
               fontSize: '12px',
