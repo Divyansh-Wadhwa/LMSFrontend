@@ -1,435 +1,129 @@
-import { useState } from "react"
-import AppSidebar from "../../components/shared/AppSidebar"
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-// SVG Icons
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-  </svg>
-)
-
-const BellIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-  </svg>
-)
-
-const UserIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-  </svg>
-)
-
-const PlusIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14M5 12h14"/>
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-)
-
-const BookIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-  </svg>
-)
-
-const enrolledCourses = [
-  {
-    id: 1,
-    title: "Advanced Algorithms & Data Structures",
-    instructor: "Dr. Alistair Vance",
-    progress: 68,
-    gradient: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
-  },
-  {
-    id: 2,
-    title: "Systems Design for Scalable Apps",
-    instructor: "Prof. Sarah Chen",
-    progress: 32,
-    gradient: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
-  },
+const COURSES = [
+  { id: 1, title: 'Data Structures & Algorithms', instructor: 'Dr. Sharma', progress: 68, modules: 12, completed: 8, tag: 'Core', color: '#2563EB', bg: '#EAF2FF', status: 'in-progress' },
+  { id: 2, title: 'System Design Fundamentals', instructor: 'Prof. Mehta', progress: 35, modules: 8, completed: 3, tag: 'Advanced', color: '#9333EA', bg: '#F3E8FF', status: 'in-progress' },
+  { id: 3, title: 'JavaScript & React', instructor: 'Ms. Patel', progress: 100, modules: 10, completed: 10, tag: 'Frontend', color: '#16A34A', bg: '#DCFCE7', status: 'completed' },
+  { id: 4, title: 'Database Management', instructor: 'Dr. Kumar', progress: 0, modules: 6, completed: 0, tag: 'Backend', color: '#D97706', bg: '#FEF3C7', status: 'not-started' },
 ]
 
-const completedCourses = [
-  {
-    id: 3,
-    title: "Functional Programming with Haskell",
-    instructor: "Dr. James Mitchell",
-    completedDate: "Completed on Jan 15, 2024",
-  },
-  {
-    id: 4,
-    title: "Computer Architecture Foundations",
-    instructor: "Prof. Robert Kumar",
-    completedDate: "Completed on Dec 20, 2023",
-  },
+const MODULES = [
+  { id: 1, title: 'Arrays & Strings', duration: '45 min', done: true },
+  { id: 2, title: 'Linked Lists', duration: '60 min', done: true },
+  { id: 3, title: 'Stacks & Queues', duration: '50 min', done: true },
+  { id: 4, title: 'Trees & Graphs', duration: '90 min', done: false },
+  { id: 5, title: 'Dynamic Programming', duration: '120 min', done: false },
 ]
 
-// Top Nav with Tabs
-const TopNav = () => {
-  const [activeTab] = useState('courses')
+export default function MyCourses() {
+  const navigate = useNavigate()
+  const [selected, setSelected] = useState<number | null>(null)
+  const [tab, setTab] = useState<'all' | 'in-progress' | 'completed'>('all')
+
+  const filtered = COURSES.filter(c => tab === 'all' || c.status === tab)
+  const course = COURSES.find(c => c.id === selected)
+
+  if (selected && course) return (
+    <div>
+      <button onClick={() => setSelected(null)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#64748B', fontSize: '14px', cursor: 'pointer', marginBottom: '24px', padding: 0 }}>
+        ← Back to Courses
+      </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', overflow: 'hidden', marginBottom: '24px' }}>
+            <div style={{ background: '#0F3D5E', padding: '28px', color: 'white' }}>
+              <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, marginBottom: '12px', display: 'inline-block' }}>{course.tag}</span>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 6px' }}>{course.title}</h2>
+              <p style={{ fontSize: '14px', opacity: 0.8, margin: 0 }}>Instructor: {course.instructor}</p>
+            </div>
+            <div style={{ padding: '20px 28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748B', marginBottom: '8px' }}>
+                <span>Progress</span><span style={{ fontWeight: 600, color: '#0F172A' }}>{course.completed}/{course.modules} modules</span>
+              </div>
+              <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '4px' }}>
+                <div style={{ width: `${course.progress}%`, height: '100%', background: '#2563EB', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: '0 0 16px' }}>Course Modules</h3>
+            {MODULES.map((m, i) => (
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', borderBottom: i < MODULES.length - 1 ? '1px solid #F1F5F9' : 'none', cursor: 'pointer' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: m.done ? '#DCFCE7' : '#F1F5F9', border: `2px solid ${m.done ? '#16A34A' : '#E5E7EB'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>
+                  {m.done ? '✓' : i + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#0F172A' }}>{m.title}</div>
+                  <div style={{ fontSize: '12px', color: '#94A3B8' }}>{m.duration}</div>
+                </div>
+                <button style={{ padding: '6px 14px', background: m.done ? 'transparent' : '#0F3D5E', color: m.done ? '#16A34A' : 'white', border: m.done ? '1px solid #16A34A' : 'none', borderRadius: '7px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                  {m.done ? 'Review' : 'Start'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '20px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '14px' }}>Your Stats</div>
+            {[['Completed', `${course.completed} modules`], ['Remaining', `${course.modules - course.completed} modules`], ['Est. time left', '3h 20min']].map(([l, v]) => (
+              <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px' }}>
+                <span style={{ color: '#64748B' }}>{l}</span><span style={{ fontWeight: 600, color: '#0F172A' }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: '#0F3D5E', borderRadius: '14px', padding: '20px', color: 'white' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Continue Learning</div>
+            <p style={{ fontSize: '13px', opacity: 0.8, margin: '0 0 14px', lineHeight: 1.5 }}>Next: Trees & Graphs — 90 min</p>
+            <button style={{ width: '100%', padding: '10px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Resume →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      height: '48px',
-    }}>
-      {/* Left - Tabs */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        {[
-          { id: 'dashboard', label: 'Dashboard' },
-          { id: 'courses', label: 'My Courses' },
-          { id: 'resources', label: 'Resources' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            style={{
-              padding: '4px 0',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid #2563EB' : '2px solid transparent',
-              color: activeTab === tab.id ? '#2563EB' : '#64748B',
-              fontSize: '14px',
-              fontWeight: activeTab === tab.id ? 600 : 500,
-              cursor: 'pointer',
-            }}
-          >
-            {tab.label}
+    <div>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>My Courses</h1>
+        <p style={{ fontSize: '14px', color: '#64748B', margin: 0 }}>Courses assigned to your batch</p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        {(['all', 'in-progress', 'completed'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 16px', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: tab === t ? '#2563EB' : '#F1F5F9', color: tab === t ? 'white' : '#64748B', textTransform: 'capitalize', transition: 'all 0.15s' }}>
+            {t.replace('-', ' ')}
           </button>
         ))}
       </div>
 
-      {/* Right - Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Search */}
-        <div style={{
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          <div style={{ position: 'absolute', left: '10px', display: 'flex' }}>
-            <SearchIcon />
-          </div>
-          <input
-            type="text"
-            placeholder="Search courses..."
-            style={{
-              width: '260px',
-              height: '36px',
-              padding: '0 10px 0 34px',
-              borderRadius: '8px',
-              border: '1px solid #E5E7EB',
-              fontSize: '13px',
-              outline: 'none',
-            }}
-          />
-        </div>
-
-        <button style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-          <BellIcon />
-        </button>
-
-        <button style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-          <UserIcon />
-        </button>
-
-        <button style={{
-          padding: '8px 14px',
-          backgroundColor: '#0F3D5E',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '13px',
-          fontWeight: 500,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}>
-          <PlusIcon />
-          New Lab
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Course Card
-const CourseCard = ({ course }: { course: typeof enrolledCourses[0] }) => {
-  return (
-    <div style={{
-      height: '180px',
-      backgroundColor: 'white',
-      borderRadius: '16px',
-      overflow: 'hidden',
-      display: 'flex',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-    }}>
-      {/* Left - Image Block */}
-      <div style={{
-        width: '140px',
-        minWidth: '140px',
-        height: '100%',
-        background: course.gradient,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <BookIcon />
-      </div>
-
-      {/* Right - Content */}
-      <div style={{
-        flex: 1,
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}>
-        <div>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#0F172A',
-            margin: '0 0 4px 0',
-            lineHeight: '1.3',
-          }}>
-            {course.title}
-          </h3>
-          <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
-            {course.instructor}
-          </p>
-        </div>
-
-        <div>
-          {/* Progress Row */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '8px',
-          }}>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#0F172A', letterSpacing: '0.5px' }}>
-              PROGRESS
-            </span>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#2563EB' }}>
-              {course.progress}%
-            </span>
-          </div>
-
-          {/* Progress Bar */}
-          <div style={{ height: '4px', backgroundColor: '#E5E7EB', borderRadius: '2px', marginBottom: '12px' }}>
-            <div style={{
-              width: `${course.progress}%`,
-              height: '100%',
-              backgroundColor: '#2563EB',
-              borderRadius: '2px',
-            }} />
-          </div>
-
-          {/* Button */}
-          <button style={{
-            height: '36px',
-            padding: '0 16px',
-            backgroundColor: '#0F3D5E',
-            color: 'white',
-            border: 'none',
-            borderRadius: '10px',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}>
-            CONTINUE LEARNING
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Completed Course Row Component
-const CompletedCourseRow = ({ course }: { course: typeof completedCourses[0] }) => {
-  return (
-    <div style={{
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      padding: '16px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-      transition: 'all 0.2s ease',
-      cursor: 'pointer',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)'
-    }}>
-      {/* Left - Icon & Info */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-      }}>
-        <div style={{
-          width: '44px',
-          height: '44px',
-          backgroundColor: '#DBEAFE',
-          borderRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <CheckIcon />
-        </div>
-        <div>
-          <h4 style={{
-            fontSize: '15px',
-            fontWeight: '600',
-            color: '#0F172A',
-            margin: '0 0 4px 0',
-          }}>
-            {course.title}
-          </h4>
-          <p style={{
-            fontSize: '13px',
-            color: '#64748B',
-            margin: 0,
-          }}>
-            {course.instructor} • {course.completedDate}
-          </p>
-        </div>
-      </div>
-
-      {/* Right - Actions */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-      }}>
-        <button style={{
-          padding: '8px 16px',
-          backgroundColor: 'transparent',
-          border: 'none',
-          color: '#64748B',
-          fontSize: '13px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'color 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = '#0F172A'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = '#64748B'
-        }}>
-          REVIEW COURSE
-        </button>
-        <button style={{
-          padding: '8px 16px',
-          backgroundColor: '#0EA5A4',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          fontSize: '13px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#0D9488'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#0EA5A4'
-        }}>
-          CERTIFICATE
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Main MyCourses Component - Uses shared sidebar but custom top nav
-export default function MyCourses() {
-  return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      backgroundColor: '#F5F7FB',
-    }}>
-      {/* Shared Sidebar (same as other pages) */}
-      <AppSidebar />
-
-      {/* Main Content */}
-      <div style={{
-        flex: 1,
-        marginLeft: '240px',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#F5F7FB',
-      }}>
-        {/* Custom Top Nav - White background to match sidebar */}
-        <div style={{ 
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #E5E7EB',
-          padding: '16px 32px',
-        }}>
-          <TopNav />
-        </div>
-
-        {/* Page Content */}
-        <div style={{ padding: '24px 32px 32px' }}>
-          {/* Page Header */}
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#0F172A', margin: '0 0 28px 0' }}>
-            My Courses
-          </h1>
-
-          {/* Enrolled Section */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{ fontSize: '11px', color: '#94A3B8', letterSpacing: '1.5px', fontWeight: 600, marginBottom: '6px' }}>
-              ONGOING CURRICULUM
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {filtered.map(c => (
+          <div key={c.id} onClick={() => setSelected(c.id)} style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '24px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+              <span style={{ padding: '4px 10px', background: c.bg, color: c.color, borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{c.tag}</span>
+              {c.status === 'completed' && <span style={{ fontSize: '12px', color: '#16A34A', fontWeight: 600 }}>✓ Completed</span>}
             </div>
-            <h2 style={{ fontSize: '28px', fontWeight: 600, color: '#0F172A', margin: '0 0 24px 0' }}>
-              Enrolled Courses
-            </h2>
-
-            {/* Cards Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '24px',
-            }}>
-              {enrolledCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
+            <h3 style={{ fontSize: '17px', fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>{c.title}</h3>
+            <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 16px' }}>{c.instructor} · {c.modules} modules</p>
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#94A3B8', marginBottom: '6px' }}>
+                <span>{c.completed}/{c.modules} completed</span><span>{c.progress}%</span>
+              </div>
+              <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '3px' }}>
+                <div style={{ width: `${c.progress}%`, height: '100%', background: c.color, borderRadius: '3px' }} />
+              </div>
             </div>
           </div>
-
-          {/* Completed Section */}
-          <div>
-            <div style={{ fontSize: '11px', color: '#94A3B8', letterSpacing: '1.5px', fontWeight: 600, marginBottom: '6px' }}>
-              ARCHIVED ACHIEVEMENTS
-            </div>
-            <h2 style={{ fontSize: '28px', fontWeight: 600, color: '#0F172A', margin: '0 0 24px 0' }}>
-              Completed Courses
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {completedCourses.map((course) => (
-                <CompletedCourseRow key={course.id} course={course} />
-              ))}
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   )

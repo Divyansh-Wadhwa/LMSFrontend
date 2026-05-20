@@ -1,709 +1,148 @@
-import { useState } from "react"
+import { useState } from 'react'
 
-// SVG Icons
-const PencilIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-  </svg>
-)
+const ACTIVITY = [
+  { date: 'Today', items: ['Solved: Two Sum (Easy)', 'Completed: Arrays Module', 'Streak: 14 days 🔥'] },
+  { date: 'Yesterday', items: ['Solved: Valid Parentheses (Easy)', 'Solved: Merge Intervals (Medium)'] },
+  { date: '2 days ago', items: ['Completed: Linked Lists Module', 'Scored 87% in JavaScript Assessment'] },
+]
 
-const DownloadIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
-  </svg>
-)
+const BADGES = [
+  { icon: '🔥', label: '14-Day Streak', color: '#FEE2E2', text: '#DC2626' },
+  { icon: '⚡', label: '100 Problems', color: '#FEF3C7', text: '#D97706' },
+  { icon: '🏆', label: 'Top 15%', color: '#EAF2FF', text: '#2563EB' },
+  { icon: '📚', label: 'Course Complete', color: '#DCFCE7', text: '#16A34A' },
+]
 
-const ChevronRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m9 18 6-6-6-6"/>
-  </svg>
+const HEATMAP = Array.from({ length: 52 }, (_, w) =>
+  Array.from({ length: 7 }, (_, d) => {
+    const v = Math.random()
+    return v > 0.7 ? 3 : v > 0.5 ? 2 : v > 0.3 ? 1 : 0
+  })
 )
-
-const LockIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-)
-
-const AwardIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CA8A04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="7"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/>
-  </svg>
-)
-
-const ZapIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-  </svg>
-)
-
-const CrownIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 4l6 12 6-12"/><path d="M4 10h16"/><path d="M12 16v6"/><path d="M8 22h8"/>
-  </svg>
-)
-
-// Toggle Component
-const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
-  <button
-    onClick={() => onChange(!checked)}
-    style={{
-      width: '48px',
-      height: '26px',
-      borderRadius: '13px',
-      backgroundColor: checked ? '#2563EB' : '#E2E8F0',
-      border: 'none',
-      cursor: 'pointer',
-      position: 'relative',
-      transition: 'all 0.2s ease',
-      padding: 0
-    }}
-  >
-    <div style={{
-      width: '22px',
-      height: '22px',
-      borderRadius: '50%',
-      backgroundColor: 'white',
-      position: 'absolute',
-      top: '2px',
-      left: checked ? '24px' : '2px',
-      transition: 'all 0.2s ease',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-    }}></div>
-  </button>
-)
+const HEAT_COLORS = ['#E2E8F0', '#BFDBFE', '#60A5FA', '#2563EB']
 
 export default function ProfilePage() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [notifications, setNotifications] = useState(true)
-  const [profileVisible, setProfileVisible] = useState(true)
+  const [tab, setTab] = useState<'overview' | 'history' | 'badges'>('overview')
 
   return (
     <div>
-      
-      {/* Profile Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        marginBottom: '24px'
-      }}>
-        {/* Avatar Card */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '16px',
-            border: '2px solid #E5E7EB',
-            backgroundColor: '#F8FAFC',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#0F3D5E',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
-              fontWeight: '600',
-              color: 'white'
-            }}>
-              AS
+      {/* Profile header */}
+      <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '28px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+          <div style={{ width: '72px', height: '72px', background: '#2563EB', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', fontWeight: 700, flexShrink: 0 }}>DW</div>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>Divyansh Wadhwa</h2>
+            <p style={{ fontSize: '14px', color: '#64748B', margin: '0 0 12px' }}>Batch: Delta-9 · Pro Student</p>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+              {[['Rank', '#4'], ['Score', '2,580'], ['Solved', '127'], ['Streak', '14d 🔥']].map(([l, v]) => (
+                <div key={l}>
+                  <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>{l}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>{v}</div>
+                </div>
+              ))}
             </div>
           </div>
-          <span style={{
-            fontSize: '10px',
-            fontWeight: '700',
-            letterSpacing: '0.5px',
-            color: '#0D9488',
-            backgroundColor: '#CCFBF1',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            textTransform: 'uppercase'
-          }}>
-            TIER: PLATINUM
-          </span>
-        </div>
-
-        {/* Center Info */}
-        <div style={{ flex: 1 }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '6px'
-          }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: '600',
-              color: '#0F172A',
-              margin: 0
-            }}>
-              Divyansh Wadhwa
-            </h1>
-            <span style={{
-              fontSize: '11px',
-              fontWeight: '700',
-              letterSpacing: '0.5px',
-              color: '#2563EB',
-              backgroundColor: '#DBEAFE',
-              padding: '4px 10px',
-              borderRadius: '999px',
-              textTransform: 'uppercase'
-            }}>
-              PRO STUDENT
-            </span>
-          </div>
-          <p style={{
-            fontSize: '14px',
-            color: '#64748B',
-            margin: '0 0 16px 0'
-          }}>
-            Full-Stack Development Trainee • Engineering Batch of 2024
-          </p>
-          <div style={{
-            display: 'flex',
-            gap: '12px'
-          }}>
-            <button style={{
-              padding: '10px 16px',
-              backgroundColor: '#0F3D5E',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#1E3A5F'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#0F3D5E'
-            }}>
-              <PencilIcon />
-              EDIT PROFILE
-            </button>
-            <button style={{
-              padding: '10px 16px',
-              backgroundColor: 'white',
-              color: '#0F172A',
-              border: '1px solid #E5E7EB',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#F8FAFC'
-              e.currentTarget.style.borderColor = '#CBD5E1'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'white'
-              e.currentTarget.style.borderColor = '#E5E7EB'
-            }}>
-              <DownloadIcon />
-              DOWNLOAD TRANSCRIPT
-            </button>
-          </div>
+          <button style={{ padding: '9px 18px', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: '9px', fontSize: '13px', color: '#64748B', cursor: 'pointer' }}>Edit Profile</button>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gap: '24px',
-        marginTop: '24px'
-      }}>
-        
-        {/* Left Column - Performance Overview */}
-        <div style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E5E7EB',
-          padding: '24px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#0F172A',
-              margin: 0
-            }}>
-              Performance Overview
-            </h2>
-            <span style={{
-              fontSize: '11px',
-              fontWeight: '600',
-              letterSpacing: '0.5px',
-              color: '#16A34A',
-              backgroundColor: '#DCFCE7',
-              padding: '4px 10px',
-              borderRadius: '6px'
-            }}>
-              LIVE FEED UPDATES
-            </span>
-          </div>
-
-          {/* Stats Row */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '16px',
-            marginBottom: '24px'
-          }}>
-            {[
-              { label: 'Courses', value: '12', subtext: 'Completed' },
-              { label: 'Assessments', value: '48', subtext: 'Taken' },
-              { label: 'Triad Points', value: '8,420', subtext: 'Earned' }
-            ].map((stat, i) => (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: '#F8FAFC',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  textAlign: 'center',
-                  border: '1px solid #F1F5F9'
-                }}
-              >
-                <div style={{
-                  fontSize: '12px',
-                  color: '#94A3B8',
-                  marginBottom: '6px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}>
-                  {stat.label}
-                </div>
-                <div style={{
-                  fontSize: '24px',
-                  fontWeight: '700',
-                  color: '#0F172A',
-                  marginBottom: '4px'
-                }}>
-                  {stat.value}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: '#64748B'
-                }}>
-                  {stat.subtext}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress Bar */}
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '10px'
-            }}>
-              <span style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: '#0F172A'
-              }}>
-                Overall Academic Progress
-              </span>
-              <span style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                color: '#2563EB',
-                letterSpacing: '0.5px'
-              }}>
-                88.4% COMPLETE
-              </span>
-            </div>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              backgroundColor: '#F1F5F9',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: '88.4%',
-                height: '100%',
-                backgroundColor: '#2563EB',
-                borderRadius: '4px',
-                transition: 'width 0.5s ease'
-              }}></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Contact Registry */}
-        <div style={{
-          backgroundColor: '#1E3A5F',
-          borderRadius: '16px',
-          padding: '20px',
-          color: 'white'
-        }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 20px 0'
-          }}>
-            Contact Registry
-          </h3>
-
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{
-              fontSize: '11px',
-              color: '#94A3B8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: '4px'
-            }}>
-              Email
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: 'white'
-            }}>
-              aaryan.s@triad.edu.in
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{
-              fontSize: '11px',
-              color: '#94A3B8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: '4px'
-            }}>
-              Phone
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: 'white'
-            }}>
-              +91 98765 43210
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              fontSize: '11px',
-              color: '#94A3B8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: '4px'
-            }}>
-              Location
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: 'white'
-            }}>
-              Bengaluru, KA (Main)
-            </div>
-          </div>
-
-          <button style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '10px',
-            fontSize: '13px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'
-          }}>
-            VERIFY DETAILS
-          </button>
-        </div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        {(['overview', 'history', 'badges'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 16px', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: tab === t ? '#2563EB' : '#F1F5F9', color: tab === t ? 'white' : '#64748B', textTransform: 'capitalize', transition: 'all 0.15s' }}>{t}</button>
+        ))}
       </div>
 
-      {/* Bottom Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gap: '24px',
-        marginTop: '24px'
-      }}>
-        
-        {/* Left - Academic Achievements */}
-        <div style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E5E7EB',
-          padding: '24px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#0F172A',
-              margin: 0
-            }}>
-              Academic Achievements
-            </h2>
-            <button style={{
-              fontSize: '13px',
-              color: '#2563EB',
-              fontWeight: '500',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              VIEW ALL
-              <ChevronRightIcon />
-            </button>
-          </div>
+      {tab === 'overview' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Stats grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+              {[['Problems Solved', '127', '#2563EB', '#EAF2FF'], ['Labs Completed', '8', '#16A34A', '#DCFCE7'], ['Assessments', '6', '#9333EA', '#F3E8FF'], ['Courses Done', '1', '#D97706', '#FEF3C7'], ['Learning Hours', '48h', '#0891B2', '#E0F2FE'], ['Points', '2,580', '#DC2626', '#FEE2E2']].map(([l, v, c, bg]) => (
+                <div key={l} style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E5E7EB', padding: '16px' }}>
+                  <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>{l}</div>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: c as string }}>{v}</div>
+                </div>
+              ))}
+            </div>
 
-          {/* Achievement Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            {[
-              { title: 'Algorithm Master', level: 'LVL 4', icon: <ZapIcon />, color: '#2563EB', bgColor: '#EFF6FF', unlocked: true },
-              { title: 'Top 10% Java', level: 'GOLD', icon: <AwardIcon />, color: '#CA8A04', bgColor: '#FEF9C3', unlocked: true },
-              { title: 'System Architect', level: 'LOCKED', icon: <LockIcon />, color: '#94A3B8', bgColor: '#F1F5F9', unlocked: false },
-              { title: 'Early Adopter', level: 'LEGACY', icon: <CrownIcon />, color: '#16A34A', bgColor: '#DCFCE7', unlocked: true }
-            ].map((achievement, i) => (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: achievement.bgColor,
-                  borderRadius: '12px',
-                  padding: '16px',
-                  textAlign: 'center',
-                  opacity: achievement.unlocked ? 1 : 0.6,
-                  transition: 'all 0.2s ease',
-                  cursor: achievement.unlocked ? 'pointer' : 'default'
-                }}
-                onMouseEnter={(e) => {
-                  if (achievement.unlocked) {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  margin: '0 auto 8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {achievement.icon}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  color: achievement.unlocked ? '#0F172A' : '#94A3B8',
-                  marginBottom: '4px',
-                  lineHeight: '1.3'
-                }}>
-                  {achievement.title}
-                </div>
-                <div style={{
-                  fontSize: '10px',
-                  fontWeight: '700',
-                  letterSpacing: '0.5px',
-                  color: achievement.color
-                }}>
-                  {achievement.level}
-                </div>
+            {/* Activity heatmap */}
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '20px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '14px' }}>Activity — Last 12 months</div>
+              <div style={{ display: 'flex', gap: '3px', overflowX: 'auto' }}>
+                {HEATMAP.map((week, wi) => (
+                  <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {week.map((day, di) => (
+                      <div key={di} title={`${day} contributions`} style={{ width: '12px', height: '12px', borderRadius: '2px', background: HEAT_COLORS[day], transition: 'transform 0.1s' }}
+                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.3)')}
+                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} />
+                    ))}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Bottom Strip */}
-          <div style={{
-            backgroundColor: '#DBEAFE',
-            borderRadius: '12px',
-            padding: '14px 16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <span style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#1E40AF'
-            }}>
-              06 Professional Certificates Earned
-            </span>
-            <ChevronRightIcon />
-          </div>
-        </div>
-
-        {/* Right - Preferences Panel */}
-        <div style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E5E7EB',
-          padding: '24px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            color: '#0F172A',
-            margin: '0 0 20px 0'
-          }}>
-            Preferences
-          </h3>
-
-          {/* Toggles */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            marginBottom: '24px'
-          }}>
-            {[
-              { label: 'Dark Interface', state: darkMode, setState: setDarkMode },
-              { label: 'Activity Notifications', state: notifications, setState: setNotifications },
-              { label: 'Profile Visibility', state: profileVisible, setState: setProfileVisible }
-            ].map((toggle, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <span style={{
-                  fontSize: '14px',
-                  color: '#0F172A',
-                  fontWeight: '500'
-                }}>
-                  {toggle.label}
-                </span>
-                <Toggle checked={toggle.state} onChange={toggle.setState} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', fontSize: '11px', color: '#94A3B8' }}>
+                Less {HEAT_COLORS.map((c, i) => <div key={i} style={{ width: '12px', height: '12px', borderRadius: '2px', background: c }} />)} More
               </div>
-            ))}
+            </div>
           </div>
 
-          {/* Divider */}
-          <div style={{
-            height: '1px',
-            backgroundColor: '#E5E7EB',
-            margin: '20px 0'
-          }}></div>
-
-          {/* Security Section */}
-          <div>
-            <h4 style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#0F172A',
-              margin: '0 0 12px 0'
-            }}>
-              Security Actions
-            </h4>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px'
-            }}>
-              <button style={{
-                width: '100%',
-                padding: '10px',
-                textAlign: 'left',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                color: '#64748B',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#F8FAFC'
-                e.currentTarget.style.color = '#0F172A'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#64748B'
-              }}>
-                Change Access Credentials
-              </button>
-              <button style={{
-                width: '100%',
-                padding: '10px',
-                textAlign: 'left',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                color: '#DC2626',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#FEF2F2'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}>
-                Deactivate Student Account
-              </button>
+          {/* Right: difficulty breakdown */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '20px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '16px' }}>Problems by Difficulty</div>
+              {[['Easy', 68, '#16A34A', '#DCFCE7'], ['Medium', 45, '#D97706', '#FEF3C7'], ['Hard', 14, '#DC2626', '#FEE2E2']].map(([l, v, c, bg]) => (
+                <div key={l as string} style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                    <span style={{ color: '#64748B' }}>{l}</span>
+                    <span style={{ fontWeight: 700, color: c as string }}>{v}</span>
+                  </div>
+                  <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '4px' }}>
+                    <div style={{ width: `${((v as number) / 127) * 100}%`, height: '100%', background: c as string, borderRadius: '4px' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: '#0F3D5E', borderRadius: '14px', padding: '20px', color: 'white' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Next Goal</div>
+              <p style={{ fontSize: '13px', opacity: 0.8, margin: '0 0 14px', lineHeight: 1.5 }}>Solve 25 more problems to reach the Top 10%</p>
+              <div style={{ height: '6px', background: 'rgba(255,255,255,0.2)', borderRadius: '3px', marginBottom: '8px' }}>
+                <div style={{ width: '68%', height: '100%', background: '#60A5FA', borderRadius: '3px' }} />
+              </div>
+              <div style={{ fontSize: '12px', opacity: 0.7 }}>102 / 150 problems</div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
+      {tab === 'history' && (
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '24px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: '0 0 20px' }}>Recent Activity</h3>
+          {ACTIVITY.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>{group.date}</div>
+              {group.items.map((item, ii) => (
+                <div key={ii} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #F1F5F9' }}>
+                  <div style={{ width: '8px', height: '8px', background: '#2563EB', borderRadius: '50%', flexShrink: 0 }} />
+                  <span style={{ fontSize: '14px', color: '#374151' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'badges' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          {BADGES.map(b => (
+            <div key={b.label} style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '24px', textAlign: 'center', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}>
+              <div style={{ width: '56px', height: '56px', background: b.color, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', margin: '0 auto 12px' }}>{b.icon}</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: b.text }}>{b.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

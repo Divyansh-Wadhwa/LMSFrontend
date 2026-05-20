@@ -1,569 +1,279 @@
-import { useState } from "react"
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-// SVG Icons
-const PlusIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14M5 12h14"/>
-  </svg>
-)
+type Phase = 'list' | 'enter' | 'answer' | 'submit' | 'results'
 
-const ArrowRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F3D5E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14M12 5l7 7-7 7"/>
-  </svg>
-)
+const ASSESSMENTS = [
+  { id: 1, title: 'Advanced Algorithms Challenge', batch: 'Delta-9', duration: 120, questions: 4, status: 'active', dueIn: '1h 24m' },
+  { id: 2, title: 'System Design Final', batch: 'Delta-9', duration: 90, questions: 3, status: 'upcoming', dueIn: '4h 12m' },
+  { id: 3, title: 'JavaScript Fundamentals', batch: 'Delta-9', duration: 60, questions: 20, status: 'completed', score: 87, rank: 4 },
+  { id: 4, title: 'Data Structures Quiz', batch: 'Delta-9', duration: 45, questions: 15, status: 'completed', score: 92, rank: 2 },
+]
 
-interface CompletedAssessment {
-  id: number
-  name: string
-  date: string
-  score: number
-  maxScore: number
-  passed: boolean
-}
-
-const completedAssessments: CompletedAssessment[] = [
-  { id: 1, name: "Introduction to Cloud Computing", date: "Oct 12, 2023", score: 94, maxScore: 100, passed: true },
-  { id: 2, name: "Data Structures & Algorithms", date: "Oct 8, 2023", score: 82, maxScore: 100, passed: true },
-  { id: 3, name: "Quantum Computing Ethics", date: "Oct 1, 2023", score: 42, maxScore: 100, passed: false },
+const MCQ_QUESTIONS = [
+  { id: 1, q: 'What is the time complexity of binary search?', options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 1 },
+  { id: 2, q: 'Which data structure uses LIFO?', options: ['Queue', 'Stack', 'Heap', 'Tree'], correct: 1 },
+  { id: 3, q: 'What does Big-O notation measure?', options: ['Memory usage', 'Code readability', 'Algorithm efficiency', 'Syntax errors'], correct: 2 },
 ]
 
 export default function AssessmentPage() {
-  const [showAllRecords, setShowAllRecords] = useState(false)
+  const navigate = useNavigate()
+  const [phase, setPhase] = useState<Phase>('list')
+  const [activeAssessment, setActiveAssessment] = useState(ASSESSMENTS[0])
+  const [timeLeft, setTimeLeft] = useState({ h: 1, m: 24, s: 55 })
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+  const [code, setCode] = useState('// Write your solution here\nfunction twoSum(nums, target) {\n  \n}')
+  const [currentQ, setCurrentQ] = useState(0)
+  const [score] = useState(87)
 
-  const getStatusBadge = (passed: boolean) => {
-    return (
-      <span style={{
-        display: 'inline-block',
-        padding: '4px 12px',
-        backgroundColor: passed ? '#DCFCE7' : '#FEE2E2',
-        color: passed ? '#16A34A' : '#DC2626',
-        borderRadius: '999px',
-        fontSize: '12px',
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
-        {passed ? 'PASSED' : 'FAILED'}
-      </span>
-    )
-  }
+  useEffect(() => {
+    if (phase !== 'answer') return
+    const t = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.s > 0) return { ...prev, s: prev.s - 1 }
+        if (prev.m > 0) return { ...prev, m: prev.m - 1, s: 59 }
+        if (prev.h > 0) return { h: prev.h - 1, m: 59, s: 59 }
+        clearInterval(t)
+        setPhase('submit')
+        return prev
+      })
+    }, 1000)
+    return () => clearInterval(t)
+  }, [phase])
 
-  return (
+  const fmt = (n: number) => n.toString().padStart(2, '0')
+
+  const card = (style?: React.CSSProperties) => ({
+    backgroundColor: '#FFFFFF', borderRadius: '14px',
+    border: '1px solid #E5E7EB', padding: '24px', ...style,
+  })
+
+  // ── LIST ──────────────────────────────────────────────────
+  if (phase === 'list') return (
     <div>
-      
-      {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{
-          fontSize: '32px',
-          fontWeight: '600',
-          color: '#0F172A',
-          margin: '0 0 8px 0'
-        }}>
-          Academic Assessments
-        </h1>
-        <p style={{
-          fontSize: '14px',
-          color: '#64748B',
-          margin: 0
-        }}>
-          Monitor your technical proficiency and upcoming evaluations.
-        </p>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>Assessments</h1>
+        <p style={{ fontSize: '14px', color: '#64748B', margin: 0 }}>Tests assigned by your batch admin</p>
       </div>
 
-      {/* Stats Section */}
-      <div style={{
-        display: 'flex',
-        gap: '24px',
-        marginBottom: '32px'
-      }}>
-        {/* Total Taken */}
-        <div style={{
-          flex: 1,
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E5E7EB',
-          padding: '20px'
-        }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#94A3B8',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            fontWeight: '600',
-            marginBottom: '8px'
-          }}>
-            TOTAL TAKEN
-          </div>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: '700',
-            color: '#0F172A'
-          }}>
-            12
-          </div>
-        </div>
-
-        {/* Average Score */}
-        <div style={{
-          flex: 1,
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E5E7EB',
-          padding: '20px'
-        }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#94A3B8',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            fontWeight: '600',
-            marginBottom: '8px'
-          }}>
-            AVERAGE SCORE
-          </div>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: '700',
-            color: '#2563EB'
-          }}>
-            88%
-          </div>
-        </div>
-
-        {/* Pending */}
-        <div style={{
-          flex: 1,
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E5E7EB',
-          padding: '20px'
-        }}>
-          <div style={{
-            fontSize: '12px',
-            color: '#94A3B8',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            fontWeight: '600',
-            marginBottom: '8px'
-          }}>
-            PENDING
-          </div>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: '700',
-            color: '#DC2626'
-          }}>
-            2
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gap: '24px',
-        marginBottom: '32px'
-      }}>
-        
-        {/* Left Column - In Progress Assessment */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1E3A5F 0%, #0F3D5E 100%)',
-          borderRadius: '16px',
-          padding: '24px',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          {/* Top Row */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#DC2626'
-              }}></div>
-              <span style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                letterSpacing: '0.5px'
-              }}>
-                IN PROGRESS
-              </span>
-            </div>
-            <div style={{
-              textAlign: 'right'
-            }}>
-              <div style={{
-                fontSize: '11px',
-                opacity: 0.8,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                REMAINING TIME
-              </div>
-              <div style={{
-                fontSize: '16px',
-                fontWeight: '600',
-                fontFamily: 'monospace'
-              }}>
-                01:42:00
-              </div>
-            </div>
-          </div>
-
-          {/* Title */}
-          <h2 style={{
-            fontSize: '20px',
-            fontWeight: '600',
-            margin: '0 0 8px 0'
-          }}>
-            System Design Fundamentals
-          </h2>
-
-          {/* Description */}
-          <p style={{
-            fontSize: '14px',
-            opacity: 0.85,
-            margin: '0 0 24px 0',
-            lineHeight: '1.5'
-          }}>
-            Scalability, Load Balancing, and Database Sharding concepts.
-          </p>
-
-          {/* Progress Section */}
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '8px'
-            }}>
-              <span style={{
-                fontSize: '11px',
-                opacity: 0.8,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                QUESTION 14 OF 30
-              </span>
-              <span style={{
-                fontSize: '11px',
-                fontWeight: '600'
-              }}>
-                46% COMPLETE
-              </span>
-            </div>
-            <div style={{
-              height: '4px',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              borderRadius: '2px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: '46%',
-                height: '100%',
-                backgroundColor: 'white',
-                borderRadius: '2px'
-              }}></div>
-            </div>
-          </div>
-
-          {/* Resume Button */}
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            backgroundColor: 'white',
-            color: '#0F3D5E',
-            border: 'none',
-            borderRadius: '10px',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            marginTop: 'auto'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F8FAFC'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'white'
-          }}>
-            RESUME ASSESSMENT
-            <ArrowRightIcon />
-          </button>
-        </div>
-
-        {/* Right Column - Upcoming */}
-        <div>
-          <div style={{
-            fontSize: '12px',
-            color: '#94A3B8',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            fontWeight: '600',
-            marginBottom: '16px'
-          }}>
-            UPCOMING
-          </div>
-
-          {/* Upcoming Card 1 */}
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '12px',
-            border: '1px solid #E5E7EB',
-            padding: '16px',
-            marginBottom: '12px',
-            borderLeft: '3px solid #2563EB',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = 'none'
-          }}>
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#0F172A',
-              marginBottom: '4px'
-            }}>
-              Operating Systems Quiz
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: '#64748B'
-            }}>
-              Starts in 4h
-            </div>
-          </div>
-
-          {/* Upcoming Card 2 */}
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '12px',
-            border: '1px solid #E5E7EB',
-            padding: '16px',
-            marginBottom: '16px',
-            borderLeft: '3px solid #2563EB',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = 'none'
-          }}>
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#0F172A',
-              marginBottom: '4px'
-            }}>
-              Network Protocols
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: '#64748B'
-            }}>
-              Starts tomorrow
-            </div>
-          </div>
-
-          {/* View Calendar Link */}
-          <a href="#" style={{
-            fontSize: '13px',
-            color: '#2563EB',
-            textDecoration: 'none',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.textDecoration = 'underline'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.textDecoration = 'none'
-          }}>
-            View Assessment Calendar →
-          </a>
-        </div>
-      </div>
-
-      {/* Bottom Section - Completed Assessments */}
-      <div style={{
-        backgroundColor: '#FFFFFF',
-        borderRadius: '16px',
-        border: '1px solid #E5E7EB',
-        overflow: 'hidden'
-      }}>
-        {/* Table Header */}
-        <div style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid #E5E7EB'
-        }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            color: '#0F172A',
-            margin: 0
-          }}>
-            Completed Assessments
-          </h3>
-        </div>
-
-        {/* Table */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-          padding: '16px 24px',
-          backgroundColor: '#F8FAFC',
-          borderBottom: '1px solid #E5E7EB'
-        }}>
-          {['Assessment Name', 'Date', 'Score', 'Status', 'Action'].map((col) => (
-            <span key={col} style={{
-              fontSize: '12px',
-              color: '#94A3B8',
-              fontWeight: '600',
-              letterSpacing: '0.5px'
-            }}>
-              {col}
-            </span>
-          ))}
-        </div>
-
-        {/* Table Rows */}
-        {completedAssessments.map((assessment, i, arr) => (
-          <div
-            key={assessment.id}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-              padding: '16px 24px',
-              alignItems: 'center',
-              borderBottom: i < arr.length - 1 ? '1px solid #F1F5F9' : 'none',
-              fontSize: '14px',
-              transition: 'background-color 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#F8FAFC'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-            }}
-          >
-            <span style={{
-              fontWeight: '500',
-              color: '#0F172A'
-            }}>
-              {assessment.name}
-            </span>
-            <span style={{
-              color: '#64748B'
-            }}>
-              {assessment.date}
-            </span>
-            <span style={{
-              fontWeight: '500',
-              color: '#0F172A'
-            }}>
-              {assessment.score}/{assessment.maxScore}
-            </span>
+      {/* Active */}
+      <div style={{ fontSize: '11px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600, marginBottom: '12px' }}>Active</div>
+      {ASSESSMENTS.filter(a => a.status === 'active').map(a => (
+        <div key={a.id} style={{ ...card({ marginBottom: '16px', borderLeft: '4px solid #DC2626' }) }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              {getStatusBadge(assessment.passed)}
+              <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#0F172A', margin: '0 0 6px' }}>{a.title}</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 12px' }}>Batch: {a.batch} · {a.duration} min · {a.questions} questions</p>
+              <span style={{ padding: '4px 10px', background: '#FEE2E2', color: '#DC2626', borderRadius: '999px', fontSize: '12px', fontWeight: 600 }}>
+                ⏱ Ends in {a.dueIn}
+              </span>
             </div>
-            <button style={{
-              fontSize: '13px',
-              color: '#2563EB',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '500',
-              padding: 0,
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.textDecoration = 'underline'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.textDecoration = 'none'
-            }}>
-              View Report
+            <button onClick={() => { setActiveAssessment(a); setPhase('enter') }} style={{ padding: '10px 20px', background: '#0F3D5E', color: 'white', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+              Enter Test
             </button>
           </div>
-        ))}
+        </div>
+      ))}
 
-        {/* Table Footer */}
-        <div style={{
-          padding: '16px 24px',
-          borderTop: '1px solid #F1F5F9',
-          textAlign: 'center'
-        }}>
-          <button
-            onClick={() => setShowAllRecords(!showAllRecords)}
-            style={{
-              fontSize: '13px',
-              color: '#64748B',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#0F172A'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#64748B'
-            }}>
-            SHOW ALL RECORDS
-          </button>
+      {/* Upcoming */}
+      <div style={{ fontSize: '11px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600, margin: '24px 0 12px' }}>Upcoming</div>
+      {ASSESSMENTS.filter(a => a.status === 'upcoming').map(a => (
+        <div key={a.id} style={{ ...card({ marginBottom: '16px', borderLeft: '4px solid #D97706' }) }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>{a.title}</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>Starts in {a.dueIn} · {a.duration} min · {a.questions} questions</p>
+            </div>
+            <span style={{ padding: '6px 14px', background: '#FEF3C7', color: '#D97706', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>Upcoming</span>
+          </div>
+        </div>
+      ))}
+
+      {/* Completed */}
+      <div style={{ fontSize: '11px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600, margin: '24px 0 12px' }}>Completed</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        {ASSESSMENTS.filter(a => a.status === 'completed').map(a => (
+          <div key={a.id} style={{ ...card() }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#0F172A', margin: '0 0 8px' }}>{a.title}</h3>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+              <div><div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '2px' }}>SCORE</div><div style={{ fontSize: '22px', fontWeight: 700, color: '#16A34A' }}>{a.score}%</div></div>
+              <div><div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '2px' }}>RANK</div><div style={{ fontSize: '22px', fontWeight: 700, color: '#2563EB' }}>#{a.rank}</div></div>
+            </div>
+            <button onClick={() => setPhase('results')} style={{ fontSize: '13px', color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}>View Results →</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ── ENTER TEST ────────────────────────────────────────────
+  if (phase === 'enter') return (
+    <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
+      <div style={{ ...card({ textAlign: 'center', padding: '48px' }) }}>
+        <div style={{ width: '64px', height: '64px', background: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '28px' }}>🔒</div>
+        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', margin: '0 0 8px' }}>{activeAssessment.title}</h2>
+        <p style={{ fontSize: '14px', color: '#64748B', margin: '0 0 32px' }}>Batch: {activeAssessment.batch} · {activeAssessment.duration} min · {activeAssessment.questions} questions</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+          {[['Duration', `${activeAssessment.duration} min`], ['Questions', activeAssessment.questions], ['Fullscreen', 'Required']].map(([l, v]) => (
+            <div key={l as string} style={{ background: '#F8FAFC', borderRadius: '10px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>{l}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#0F172A' }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '10px', padding: '14px', marginBottom: '28px', fontSize: '13px', color: '#92400E', textAlign: 'left' }}>
+          ⚠️ Once you start, the timer begins. Tab switching will be detected and logged.
+        </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button onClick={() => setPhase('list')} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '14px', color: '#64748B', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={() => setPhase('answer')} style={{ padding: '12px 28px', background: '#0F3D5E', color: 'white', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Start Test →</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── ANSWER ────────────────────────────────────────────────
+  if (phase === 'answer') return (
+    <div>
+      {/* Timer bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0F3D5E', borderRadius: '12px', padding: '14px 20px', marginBottom: '24px' }}>
+        <span style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>{activeAssessment.title}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ background: '#FEE2E2', color: '#DC2626', padding: '6px 14px', borderRadius: '8px', fontFamily: 'monospace', fontWeight: 700, fontSize: '16px' }}>
+            {fmt(timeLeft.h)}:{fmt(timeLeft.m)}:{fmt(timeLeft.s)}
+          </span>
+          <button onClick={() => setPhase('submit')} style={{ padding: '8px 18px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Submit</button>
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <button style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        width: '48px',
-        height: '48px',
-        borderRadius: '50%',
-        backgroundColor: '#0F3D5E',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'transform 0.2s ease',
-        zIndex: 50
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.1)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)'
-      }}>
-        <PlusIcon />
-      </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        {/* Code editor */}
+        <div style={{ ...card({ padding: 0, overflow: 'hidden' }) }}>
+          <div style={{ background: '#1E293B', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: '#94A3B8', fontSize: '13px', fontWeight: 500 }}>Q1: Two Sum — Code Solution</span>
+            <select style={{ background: '#334155', color: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }}>
+              <option>JavaScript</option><option>Python</option><option>Java</option>
+            </select>
+          </div>
+          <textarea value={code} onChange={e => setCode(e.target.value)} style={{ width: '100%', height: '320px', background: '#0F172A', color: '#E2E8F0', border: 'none', padding: '16px', fontFamily: 'monospace', fontSize: '14px', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 }} />
+          <div style={{ background: '#1E293B', padding: '10px 16px', display: 'flex', gap: '10px' }}>
+            <button style={{ padding: '7px 16px', background: '#334155', color: '#E2E8F0', border: 'none', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>Run</button>
+            <button style={{ padding: '7px 16px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '7px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Test Cases</button>
+          </div>
+        </div>
 
+        {/* MCQ panel */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ ...card() }}>
+            <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>MCQ — Q{currentQ + 1} of {MCQ_QUESTIONS.length}</div>
+            <p style={{ fontSize: '14px', color: '#0F172A', fontWeight: 500, margin: '0 0 16px', lineHeight: 1.5 }}>{MCQ_QUESTIONS[currentQ].q}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {MCQ_QUESTIONS[currentQ].options.map((opt, i) => (
+                <button key={i} onClick={() => setAnswers(prev => ({ ...prev, [currentQ]: i }))}
+                  style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '8px', border: `1.5px solid ${answers[currentQ] === i ? '#2563EB' : '#E5E7EB'}`, background: answers[currentQ] === i ? '#EAF2FF' : '#F8FAFC', color: answers[currentQ] === i ? '#2563EB' : '#374151', fontSize: '13px', cursor: 'pointer', fontWeight: answers[currentQ] === i ? 600 : 400, transition: 'all 0.15s' }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+              <button onClick={() => setCurrentQ(Math.max(0, currentQ - 1))} disabled={currentQ === 0} style={{ padding: '7px 14px', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: '7px', fontSize: '13px', color: '#64748B', cursor: 'pointer' }}>← Prev</button>
+              <button onClick={() => setCurrentQ(Math.min(MCQ_QUESTIONS.length - 1, currentQ + 1))} disabled={currentQ === MCQ_QUESTIONS.length - 1} style={{ padding: '7px 14px', background: '#0F3D5E', color: 'white', border: 'none', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>Next →</button>
+            </div>
+          </div>
+          {/* Progress */}
+          <div style={{ ...card({ padding: '16px' }) }}>
+            <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '10px' }}>Question Progress</div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {MCQ_QUESTIONS.map((_, i) => (
+                <div key={i} onClick={() => setCurrentQ(i)} style={{ width: '32px', height: '32px', borderRadius: '6px', background: answers[i] !== undefined ? '#DCFCE7' : i === currentQ ? '#EAF2FF' : '#F1F5F9', border: `1.5px solid ${answers[i] !== undefined ? '#16A34A' : i === currentQ ? '#2563EB' : '#E5E7EB'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 600, color: answers[i] !== undefined ? '#16A34A' : i === currentQ ? '#2563EB' : '#64748B', cursor: 'pointer' }}>
+                  {i + 1}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── SUBMIT ────────────────────────────────────────────────
+  if (phase === 'submit') return (
+    <div style={{ maxWidth: '520px', margin: '0 auto', paddingTop: '40px' }}>
+      <div style={{ ...card({ textAlign: 'center', padding: '48px' }) }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📤</div>
+        <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A', margin: '0 0 8px' }}>Ready to Submit?</h2>
+        <p style={{ fontSize: '14px', color: '#64748B', margin: '0 0 28px' }}>Your answers will be auto-graded. This action cannot be undone.</p>
+        <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '16px', marginBottom: '28px' }}>
+          {[['Code questions answered', '1/1'], ['MCQ answered', `${Object.keys(answers).length}/${MCQ_QUESTIONS.length}`], ['Time remaining', `${fmt(timeLeft.h)}:${fmt(timeLeft.m)}:${fmt(timeLeft.s)}`]].map(([l, v]) => (
+            <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #E5E7EB', fontSize: '14px' }}>
+              <span style={{ color: '#64748B' }}>{l}</span><span style={{ fontWeight: 600, color: '#0F172A' }}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button onClick={() => setPhase('answer')} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '14px', color: '#64748B', cursor: 'pointer' }}>Go Back</button>
+          <button onClick={() => setPhase('results')} style={{ padding: '12px 28px', background: '#16A34A', color: 'white', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Submit Now</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── RESULTS ───────────────────────────────────────────────
+  return (
+    <div>
+      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>Results</h1>
+          <p style={{ fontSize: '14px', color: '#64748B', margin: 0 }}>{activeAssessment.title}</p>
+        </div>
+        <button onClick={() => setPhase('list')} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '14px', color: '#64748B', cursor: 'pointer' }}>← Back to Assessments</button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '28px' }}>
+        {[['Score', `${score}%`, '#16A34A', '#DCFCE7'], ['Rank', '#4', '#2563EB', '#EAF2FF'], ['Percentile', 'Top 15%', '#9333EA', '#F3E8FF']].map(([l, v, c, bg]) => (
+          <div key={l} style={{ ...card({ textAlign: 'center', padding: '28px' }) }}>
+            <div style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>{l}</div>
+            <div style={{ fontSize: '36px', fontWeight: 800, color: c }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div style={{ ...card() }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', marginBottom: '16px' }}>Question Review</div>
+          {MCQ_QUESTIONS.map((q, i) => (
+            <div key={i} style={{ padding: '14px 0', borderBottom: '1px solid #F1F5F9' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '13px', color: '#0F172A', fontWeight: 500 }}>Q{i + 1}: {q.q}</span>
+                <span style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '6px', background: answers[i] === q.correct ? '#DCFCE7' : '#FEE2E2', color: answers[i] === q.correct ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
+                  {answers[i] === q.correct ? '✓ Correct' : '✗ Wrong'}
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748B' }}>Your answer: <strong>{q.options[answers[i]] || 'Not answered'}</strong> · Correct: <strong style={{ color: '#16A34A' }}>{q.options[q.correct]}</strong></div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ ...card() }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', marginBottom: '12px' }}>Performance Breakdown</div>
+            {[['MCQ', 2, 3], ['Coding', 1, 1]].map(([l, got, total]) => (
+              <div key={l as string} style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                  <span style={{ color: '#64748B' }}>{l}</span><span style={{ fontWeight: 600, color: '#0F172A' }}>{got}/{total}</span>
+                </div>
+                <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '3px' }}>
+                  <div style={{ width: `${(got as number / (total as number)) * 100}%`, height: '100%', background: '#2563EB', borderRadius: '3px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: '#0F3D5E', borderRadius: '14px', padding: '20px', color: 'white' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Keep it up!</div>
+            <p style={{ fontSize: '13px', opacity: 0.85, margin: '0 0 16px', lineHeight: 1.5 }}>You're in the top 15% of your batch. Practice more DSA to improve.</p>
+            <button onClick={() => navigate('/practice')} style={{ width: '100%', padding: '10px', background: '#2563EB', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Practice Now</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
